@@ -1092,7 +1092,7 @@ Now we sum over IL17:
 ```{r}
 data_tidy_bcg_040 <- data_tidy_bcg_040 |>
   UtilsCytoRSV::sum_over_markers(
-    grp = c("ptid", "prid", "vaccine", "infxn", "timepoint", "subset", "cyt_combn"),
+    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset", "cyt_combn"),
     cmbn = "cyt_combn",
     markers_to_sum = c("17", "22"),
     resp = "response"
@@ -1250,6 +1250,20 @@ h56_tbl_non_sex_merge <- h56_tbl_tmp |>
     ptid, infxn, timepoint, stim, subset, cyt_combn, response, everything()
   ) |>
   dplyr::select(-stim)
+ptid_vec_immune <- unique(h56_tbl_non_sex_merge$ptid)
+ptid_vec_sex <- unique(
+      data_tidy_sex_c035_456 |>
+      dplyr::mutate(ptid = tolower(ptid)) |>
+      dplyr::pull(ptid)
+)
+ptid_vec_immune
+ptid_vec_sex
+ptid_vec_main <- unique(h56_tbl_pid$ptid) |> tolower()
+ptid_vec_main <- paste0(
+  "id_0", unique(h56_tbl_pid$ptid) |> tolower()
+)
+ptid_vec_main %in% ptid_vec_immune
+sum(ptid_vec_immune %in% ptid_vec_sex)
 data_tidy_h56 <- h56_tbl_non_sex_merge |>
   dplyr::left_join(
     data_tidy_sex_c035_456 |>
@@ -1773,7 +1787,7 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
     response = as.numeric(response)
   ) |>
   UtilsCytoRSV::sum_over_markers(
-    grp = c("ptid", "prid", "vaccine", "infxn", "timepoint", "stim", "subset"),
+    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "stim", "subset"),
     cmbn = "cyt_combn",
     markers_to_sum = c("17", "22"),
     resp = "response"
@@ -2056,13 +2070,16 @@ projr::projr_use_data(data_tidy_vacc_freq, overwrite = TRUE)
 
 ```{r}
 data_tidy_vacc_freq |>
+  dplyr::filter(
+    vaccine != "h56"
+  ) |>
   dplyr::group_by(
-    vaccine, infxn, sex, ptid
+    vaccine, prid, infxn, sex, ptid
   ) |>
   dplyr::slice(1) |>
   dplyr::ungroup() |>
   dplyr::group_by(
-    vaccine, infxn, sex
+    vaccine, prid, infxn, sex
   ) |>
   dplyr::summarise(
     count = dplyr::n()
