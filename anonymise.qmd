@@ -109,6 +109,362 @@ data_tidy_sex_h1 <- data_raw_sex_h1 |>
 UtilsDataRSV::view_cols(data_tidy_sex_h1)
 ```
 
+# ID93
+
+```{r}
+data_raw_id93 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MASTER TABLE IDRI-114 All Cohorts v.02.xlsx"
+  )
+)
+```
+
+```{r}
+UtilsDataRSV::view_cols(
+  data_raw_id93 |>
+    dplyr::select(Sample:`TUBE NAME`)
+  )
+```
+
+```{r}
+data_tidy_id93 <- data_raw_id93
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::select(-Sample) |>
+  dplyr::filter(
+    COHORT %in% c(1, 3) 
+  ) |>
+  dplyr::select(-`$FIL`) |>
+  dplyr::rename(ptid = `SAMPLE ID`) |>
+  dplyr::select(-`Date of Blood Draw`) |>
+  dplyr::select(-COHORT) |>
+  dplyr::filter(RANDOMISATION == "ID93+GLA/SE") |>
+  dplyr::rename(
+    vaccine = RANDOMISATION
+  ) |>
+  dplyr::mutate(
+    vaccine = "id93"
+  ) |>
+  dplyr::mutate(
+    prid = "114"
+  ) |>
+  dplyr::rename(
+    infxn = `QFT Status`
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(
+      infxn == "QFT+", "infected", "uninfected"
+    )
+  ) |>
+  dplyr::rename(
+    timepoint = `Study Day`
+  ) |>
+  dplyr::rename(
+    stim = `TUBE NAME`
+  ) |>
+  dplyr::mutate(
+    stim = tolower(stim)
+  ) |>
+  dplyr::filter(
+    !stim == "pha"
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, infxn, timepoint, stim, everything()
+  )
+```
+
+```{r}
+colnames(data_tidy_id93)
+```
+
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::mutate(
+    across(`CD8+,Count`:`CD4+/G-T-2-17-`, as.character)
+  ) |>
+  tidyr::pivot_longer(
+    -c(vaccine:stim),
+    names_to = "cyt_combn",
+    values_to = "response"
+  )
+```
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::mutate(
+    cyt_combn_orig = cyt_combn,
+    cyt_combn = tolower(cyt_combn)
+  ) |>
+  dplyr::filter(
+    grepl("g[+-]t[+-]2[+-]17[+-]$", cyt_combn)
+  ) |>
+  dplyr::mutate(
+    subset = ifelse(grepl("^cd4", cyt_combn), "cd4", "cd8")
+  ) |>
+  dplyr::mutate(
+    cyt_combn = gsub("^cd4\\+/|^cd8\\+/", "", cyt_combn)
+  )
+```
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::mutate(
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17")
+    )
+  )
+```
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::mutate(response = as.numeric(response))
+```
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::select(
+    vaccine:stim, subset, cyt_combn_orig, cyt_combn, response, everything()
+  )
+```
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::filter(
+    cyt_combn != "g-2-t-17-"
+  ) |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c(
+      "ptid", "prid", "vaccine", "infxn", "timepoint",
+      "subset", "cyt_combn", "stim"
+    ),
+    cmbn = "cyt_combn",
+    markers_to_sum = c("17"),
+    resp = "response"
+  )
+```
+
+Now we can merge with the sex data:
+
+```{r}
+print("immune response ptid")
+unique(data_tidy_id93$ptid) |>
+  sort()
+print("sex data screen id")
+unique(data_tidy_sex_id93$screen_id |>
+  gsub("^931402-", "", x = _) |>
+  gsub(" ss$", "", x = _)) |>
+  sort()
+print("sex randomisation number")
+unique(
+  data_tidy_sex_id93$randomisation_no |>
+    gsub("^931402-", "", x = _) 
+  ) |>
+  sort()
+print("print first part of sex randomisation number")
+unique(
+  data_tidy_sex_id93$randomisation_no |>
+    gsub("^931402-", "", x = _) |>
+    gsub("^\\d+-", "", x = _)
+  ) |>
+  sort()
+print("print second part of sex randomisation number")
+unique(
+  data_tidy_sex_id93$randomisation_no |>
+    gsub("^931402-", "", x = _) |>
+    gsub("-\\d+$", "", x = _)
+  ) |>
+  sort()
+
+
+```
+
+Here are the FCS file names in the cohort 1 folder on the SATVI server:
+
+```{r}
+pid_vec_cohort_1 <- c(
+  "10.IDRI-114_931402-067-10_10SEP2015_ES-A",
+  "4.IDRI-114_931402-018-04_26JUN2015_ES-A",
+  "11.IDRI-114_931402-195-11_14SEP2015_ES-A",
+  "5.IDRI-114_931402-095-05_02JUL2015_ES-A",
+  "12.IDRI-114_931402-197-12_15SEP2015_ES-A",
+  "6.IDRI-114_931402-075-06_03JUL2015_ES-A",
+  "1.IDRI-114_931402-028-01_08JUN2015_ES-A",
+  "7.IDRI-114_931402-071-07_07JUL2015_ES-A",
+  "2.IDRI-114_931402-025-02_10JUN2015_ES-A",
+  "8.IDRI-114_931402-181-08_15JUL2015_ES-A",
+  "3.IDRI-114_931402-030-03_11JUN2015_ES-A",
+  "9.IDRI-114_931402-143-09_09SEP2015_ES-A"
+)
+pid_vec_cohort_3 <- c(
+  "10.IDRI-114_931402-044-59_12MAY2015_ES-A",
+  "2.IDRI-114_931402-069-51_05MAR2015_ES-A",
+  "11.IDRI-114_931402-003-60_14MAY2015_ES-A",
+  "3.IDRI-114_931402-126-52_09MAR2015_ES-A",
+  "12.IDRI-114_931402-129-61_20MAY2015_ES-A",
+  "4.IDRI-114_931402-175-53_10MAR2015_ES-A",
+  "13.IDRI-114_931402-073-62_27MAY2015_ES-A",
+  "5.IDRI-114_931402-089-54_07SEP2015_ES-A",
+  "14.IDRI-114_931402-139-63_27AUG2015_ES-A",
+  "6.IDRI-114_931402-172-55_12MAR2015_ES-A",
+  "15.IDRI-114_931402-166-64_29MAY2015_ES-A",
+  "7.IDRI-114_931402-088-56_13MAR2015_ES-A",
+  "16.IDRI-114_931402-173-65_02JUN2015_ES-A2",
+  "8.IDRI-114_931402-121-57_07SEP2015_ES-A",
+  "17.IDRI-114_931402-157-66_31AUG2015_ES-A",
+  "9.IDRI-114_931402-061-58_17MAR2015_ES-A",
+  "18.IDRI-114_931402-074-67_01SEP2015_ES-A",
+  "IDRI-114_51-52-53-55-56-58_30APR2015_ES-A",
+  "1.IDRI-114_931402-081-50_17SEP2015_ES-A"
+)
+```
+
+```{r}
+# "10.IDRI-114_931402-067-10_10SEP2015_ES-A",
+# extract the number after 10.IDRI-114_931402-067-
+# and before the underscore (but do it generically,
+# so we can apply the same call to 
+# 1.IDRI-114_931402-028-01_08JUN2015_ES-A, for example)
+sample_number_vec_cohort_1 <- gsub(
+  "\\d+\\.IDRI-114_931402-\\d+-", "", pid_vec_cohort_1
+) |>
+  gsub(
+    "_.*", "", x = _
+  ) |>
+  as.numeric()
+# okay, now we want to do the same,
+# except we want to extract the 931402-\\d+ 
+# part, up until that dash
+screen_id_vec_cohort_1 <- gsub(
+  "\\d+\\.IDRI-114_", "", pid_vec_cohort_1
+) |>
+  gsub(
+    "_.*", "", x = _
+  ) |>
+  gsub("-\\d+$", "", x = _)
+# it matches!
+data_tidy_sex_id93 |>
+  dplyr::mutate(
+    screen_id = gsub("\\s*ss$", "", screen_id)
+  ) |>
+  dplyr::filter(
+    screen_id %in% screen_id_vec_cohort_1
+  )
+```
+
+These match perfectly for cohort 1:
+```{r}
+data_tidy_sex_id93 |>
+  dplyr::mutate(
+    screen_id = gsub("\\s*ss$", "", screen_id)
+  ) |>
+  dplyr::filter(
+    screen_id %in% screen_id_vec_cohort_1
+  )
+```
+
+But everyone is female! So the cohort is useless.
+
+Anyway...
+
+```{r}
+data_tidy_sex_id93 |>
+  dplyr::mutate(
+    screen_id = gsub("\\s*ss$", "", screen_id)
+  ) |>
+  dplyr::filter(
+    screen_id %in% screen_id_vec_cohort_3
+  )
+```
+
+```{r}
+sample_number_vec_cohort_3 <- gsub(
+  "\\d+\\.IDRI-114_931402-\\d+-", "", pid_vec_cohort_3
+) |>
+  gsub(
+    "_.*", "", x = _
+  ) |>
+  as.numeric()
+screen_id_vec_cohort_3 <- gsub(
+  "\\d+\\.IDRI-114_", "", pid_vec_cohort_3
+) |>
+  gsub(
+    "_.*", "", x = _
+  ) |>
+  gsub("-\\d+$", "", x = _)
+```
+
+Only ten match, however:
+
+```{r}
+data_tidy_sex_id93 |>
+  dplyr::mutate(
+    screen_id = gsub("\\s*ss$", "", screen_id)
+  ) |>
+  dplyr::filter(
+    !screen_id %in% screen_id_vec_cohort_3
+  )
+screen_id_vec_cohort_3[
+  !(screen_id_vec_cohort_3 %in%
+  (data_tidy_sex_id93 |>
+    dplyr::mutate(
+    screen_id = gsub("\\s*ss$", "", screen_id)
+  ) |>
+  dplyr::pull(screen_id)))
+]
+```
+
+And it's the same ten that Humphrey had earlier. So I think Humphrey is just missing the data for samples 53 to 67.
+
+Okay, but I think now we know for sure that we can merge the sex data for the other observations in.
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::left_join(
+    data_tidy_sex_id93 |>
+      dplyr::mutate(
+        ptid = gsub("^931402-\\d+-", "", randomisation_no) |>
+          as.numeric()
+      ) |>
+      dplyr::select(ptid, sex),
+    by = "ptid"
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, sex, everything()
+  )
+```
+
+Okay, now, let's sum over the stims, and subtract background:
+
+```{r}
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::group_by(
+    vaccine, prid, ptid, sex, infxn, timepoint, subset, cyt_combn
+  ) |>
+  dplyr::summarise(
+    response_stim = sum(response[stim != "uns"]),
+    response_uns = sum(response[stim == "uns"]),
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    response = response_stim - response_uns
+  ) |>
+  dplyr::select(-c(response_stim, response_uns)) |>
+  dplyr::mutate(
+    response = ifelse(response < 0, 0, response)
+  )
+```
+
+Now we anonymise pids:
+
+```{r}
+set.seed(213)
+data_tidy_id93 <- data_tidy_id93 |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, vaccine, prid)
+  )
+```
+
+
 # `02_Feb.xlsx` spreadsheet
 
 These are the data from `02_Feb.xlsx`.
@@ -690,7 +1046,7 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
   )
 ```
 
-Now we sum over IL17 and IL22:
+Now we sum over IL17:
 
 ```{r}
 data_tidy_bcg_040 <- data_tidy_bcg_040 |>
@@ -702,7 +1058,7 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
   )
 ```
 
-And the cytokines are in the correct order, so we're done.
+
 
 ## H56
 
@@ -1433,6 +1789,38 @@ data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
   )
 ```
 
+So, I need to:
+
+- Choose the correct cohort
+- get the sex data
+- add the infxn column (based on cohort)
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::filter(
+    cohort %in% c(3:4, 7:8)
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(cohort %in% 3:4, "uninfected", "infected")
+  ) |>
+  dplyr::select(-cohort) |>
+  dplyr::select(vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response)
+```
+
+Let's get out table of pids for Humphrey:
+
+```{r}
+#| eval: false
+data_tidy_mtbvac_050_pid <- data_tidy_mtbvac_050 |>
+  dplyr::select(ptid) |>
+  dplyr::group_by(ptid) |>
+  dplyr::slice(1)
+readr::write_csv(
+  data_tidy_mtbvac_050_pid,
+  projr::projr_path_get("cache", "mtbvac_050_pids.csv")
+)
+```
+
 # Joining
 
 ```{r}
@@ -1440,15 +1828,12 @@ data_tidy_vacc_freq <- dplyr::bind_rows(
   data_tidy_mva85a_tb008,
   data_tidy_mva85a_tb011,
   data_tidy_h56,
-  data_tidy_h1
+  data_tidy_h1,
+  data_tidy_id93
 )
 ```
 
-So, I need to:
 
-- Choose the correct cohort
-- get the sex data
-- add the infxn column (based on cohort)
 
 ```{r}
 UtilsDataRSV::view_cols(data_tidy_vacc_freq)

@@ -42,10 +42,10 @@
 
 .cyt_combn_reorder_detect_pos <- function(cyt, cyt_combn, pos_ind, neg_ind) {
   if (pos_ind == "+") {
-    pos_ind == "\\+"
+    pos_ind <- "\\+"
   }
   if (neg_ind == "-") {
-    neg_ind == "\\-"
+    neg_ind <- "\\-"
   }
   paste0(cyt, pos_ind) |>
     .cyt_combn_reorder_fix_start(pos_ind, neg_ind) |>
@@ -54,10 +54,10 @@
 
 .cyt_combn_reorder_detect_neg <- function(cyt, cyt_combn, pos_ind, neg_ind) {
   if (neg_ind == "-") {
-    neg_ind == "\\-"
+    neg_ind <- "\\-"
   }
   if (pos_ind == "+") {
-    pos_ind == "\\+"
+    pos_ind <- "\\+"
   }
   paste0(cyt, neg_ind) |>
     .cyt_combn_reorder_fix_start(pos_ind, neg_ind) |>
