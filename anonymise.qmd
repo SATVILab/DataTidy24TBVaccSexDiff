@@ -503,6 +503,8 @@ data_tidy_mva85a_tb011 <- data_tidy_mva85a_tb011 |>
 
 ## BCG
 
+### TBRU
+
 This is for protocol `TBRU`.
 
 ```{r}
@@ -525,6 +527,240 @@ readr::write_csv(
   ),
 )
 ```
+
+### 040
+
+```{r}
+data_raw_bcg_040 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MergedDemoImmu29042024Copy.xlsx"
+  )
+)
+```
+
+```{r}
+data_tidy_bcg_040 <- data_raw_bcg_040 |>
+  dplyr::select(
+    -c(randdate, dob, age, race, school)
+  ) 
+```
+
+```{r}
+UtilsDataRSV::view_cols(
+  data_tidy_bcg_040 |>
+    dplyr::select(subjid:arm, ARM)
+)
+```
+
+Okay, let's have a look at these different `arm` ones:
+
+```{r}
+data_tidy_bcg_040 |>
+  dplyr::select(subjid:arm, ARM) |>
+  dplyr::group_by(arm, ARM, group) |>
+  dplyr::slice(1) |>
+  dplyr::select(-c(subjid, sex))
+```
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::mutate(
+    sex = tolower(sex)
+  ) |>
+  dplyr::filter(ARM == "BCG") |>
+  dplyr::select(-c(arm, ARM))
+```
+
+After filtering for the `ARM` column having `BCG`, we only have the `SAFETY AND IMMUNOGENICITY` group left:
+
+```{r}
+data_tidy_bcg_040 |>
+  dplyr::select(group) |>
+  dplyr::group_by(group) |>
+  dplyr::slice(1)
+```
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::select(-group) |>
+  dplyr::mutate(
+    timepoint = gsub("^D", "", timepoint) |>
+      as.numeric()
+  ) |>
+  dplyr::rename(
+    stim = Stim
+  ) |>
+  dplyr::mutate(
+    stim = tolower(stim)
+  )
+```
+
+```{r}
+UtilsDataRSV::view_cols(
+  data_tidy_bcg_040 |>
+    dplyr::select(
+      CellSubset, DataType
+    )
+)
+```
+
+So, we'll take the cd4 and cd8 groups.
+Only background-subtracted values here. 
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::rename(
+    subset = CellSubset
+  ) |>
+  dplyr::mutate(
+    subset = tolower(subset)
+  ) |>
+  dplyr::filter(
+    subset %in% c("cd4", "cd8")
+  ) |>
+  dplyr::select(-DataType)
+```
+
+Now we'll remove response-related columns we don't want.
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::select(
+    -c(FisherClassification:PFS)
+  )
+```
+
+Here are the remaining column names:
+
+```{r}
+colnames(data_tidy_bcg_040)
+```
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::select(
+    -c(Fisherpvalue:ClassificationFisher)
+  )
+```
+
+Now here are the reamining column names:
+
+```{r}
+colnames(data_tidy_bcg_040) |>
+  sort()
+```
+
+I see that some response columns start with `mg_`, and others not. Let's see what these look like:
+
+```{r}
+data_tidy_bcg_040 |>
+  dplyr::select(
+    gpIIp17_22pTp, gpII_17p22pTp, mg_1IL22nIL17nIFNgnTNFanIL2,
+    mg_1IL22n1IL17nIFNgn1TNFanIL2
+  )
+```
+
+The `mg_` columns seem to have many more NAs, so for now we'll go wit those.
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::select(-starts_with("mg_"))
+```
+
+Now we have these remaining:
+
+```{r}
+colnames(data_tidy_bcg_040)
+```
+
+I assume the underscore means negative and the `p` means positive.
+
+Let's create long-form data.
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  tidyr::pivot_longer(
+    -c(subjid:subset),
+    names_to = "cyt_combn",
+    values_to = "response"
+  )
+```
+
+Let's look at the data now:
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_bcg_040)
+```
+
+Let's remove the non-BCG stims:
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::filter(stim == "bcg")
+```
+
+Let's add the extra column names  needed, rename where needed and add an `infxn` column (all negative).
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::mutate(
+    infxn = "uninfected"
+  ) |>
+  dplyr::mutate(
+    vaccine = "bcg",
+    prid = "040"
+  ) |>
+  dplyr::rename(
+    ptid = subjid
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response
+  )
+```
+
+```{r}
+# gpIIp17p22pT_
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::mutate(
+    cyt_combn = gsub("T_$", "T-", cyt_combn),
+    cyt_combn = gsub("Tp$", "T+", cyt_combn),
+    cyt_combn = gsub("p22p", "p22+", cyt_combn),
+    cyt_combn = gsub("_22p", "_22+", cyt_combn),
+    cyt_combn = gsub("p22_", "p22-", cyt_combn),
+    cyt_combn = gsub("_22_", "_22-", cyt_combn),
+    cyt_combn = gsub("p17p", "p17+", cyt_combn),
+    cyt_combn = gsub("_17p", "_17+", cyt_combn),
+    cyt_combn = gsub("p17_", "p17-", cyt_combn),
+    cyt_combn = gsub("_17_", "_17-", cyt_combn),
+    cyt_combn = gsub("pIIp", "p2+", cyt_combn),
+    cyt_combn = gsub("_IIp", "_2+", cyt_combn),
+    cyt_combn = gsub("pII_", "p2-", cyt_combn),
+    cyt_combn = gsub("_II_", "_2-", cyt_combn),
+    cyt_combn = gsub("^gp", "g+", cyt_combn),
+    cyt_combn = gsub("^g_", "g-", cyt_combn)
+  )
+```
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  dplyr::mutate(
+    response = as.numeric(response)
+  )
+```
+
+Now we sum over IL17 and IL22:
+
+```{r}
+data_tidy_bcg_040 <- data_tidy_bcg_040 |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c("ptid", "prid", "vaccine", "infxn", "timepoint", "subset", "cyt_combn"),
+    cmbn = "cyt_combn",
+    markers_to_sum = c("17", "22"),
+    resp = "response"
+  )
+```
+
+And the cytokines are in the correct order, so we're done.
 
 ## H56
 
@@ -1095,7 +1331,188 @@ data_tidy_bcg_040 |>
 # MTBVAC 050
 
 ```{r}
+data_raw_mtbvac_050 <- readr::read_csv(
+  projr::projr_path_get(
+    "data-raw-private", "MTBVAC_FINAL.RAW.DF.csv"
+  )
+)
+```
 
+Let's have a look at the data:
+
+```{r}
+UtilsDataRSV::view_cols(
+  data_raw_mtbvac_050
+)
+```
+
+Let's remove the columns we don't care about:
+
+```{r}
+data_tidy_mtbvac_050 <- data_raw_mtbvac_050 |>
+  dplyr::select(
+    -c(sample.id, `X`, `...1`, `xml.freq`, `openCyto.count`,
+    `xml.count`, `plot.folder`, `COLLECTION DATE`,
+    `ACQUISITION DATE`)
+  )
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::mutate(
+    vaccine = "mtbvac",
+    prid = "050"
+  ) |>
+  dplyr::select(
+    vaccine, prid, everything()
+  ) |>
+  dplyr::rename(
+    cohort = COHORT,
+    response = `openCyto.freq`,
+    ptid = `Donor.ID`
+  ) |>
+  dplyr::select(-pid) |>
+  dplyr::rename(
+    stim = stimulation
+  ) |>
+  dplyr::mutate(
+    stim = tolower(stim)
+  ) |>
+  dplyr::rename(
+    timepoint = `Study.day`
+  ) |>
+  dplyr::select(
+    vaccine, prid, cohort,
+    ptid, timepoint, stim, node, response,
+    everything()
+  )
+```
+
+Okay, let's make this faster and filter on the nodes we need up front:
+```{r}
+data_tidy_mtbvac_050$node |>
+  unique() |>
+  sort()
+```
+
+Let's take all entires begining with `cd8.gate:` and `cd4.gate:`, that seems correct:
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::filter(
+    grepl("^cd8\\.gate\\:|^cd4\\.gate\\:", node)
+  )
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::mutate(
+    subset = ifelse(
+      grepl("^cd8", node),
+      "cd8",
+      "cd4"
+    )
+  ) |>
+  dplyr::select(vaccine:stim, subset, node, response, everything())
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::mutate(
+    node = gsub("cd8\\.gate\\:|cd4\\.gate\\:", "", node)
+  )
+```
+
+```{r}
+# IFNG&IL2&TNF&IL22&IL17
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::mutate(
+    node = gsub("^IFNG&", "g+&", node),
+    node = gsub("^!IFNG&", "g-&", node),
+    node = gsub("&IL2&", "2+&", node),
+    node = gsub("&!IL2&", "2-&", node),
+    node = gsub("&TNF&", "t+&", node),
+    node = gsub("&!TNF&", "t-&", node),
+    node = gsub("&IL22&", "22+&", node),
+    node = gsub("&!IL22&", "22-&", node),
+    node = gsub("&IL17", "17+", node),
+    node = gsub("&!IL17", "17-", node)
+  )
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c("ptid", "prid", "vaccine", "cohort", "timepoint", "stim", "subset"),
+    cmbn = "node",
+    markers_to_sum = c("22", "17"),
+    resp = "response"
+  )
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::filter(
+    stim %in% c("uns", "mtbvac")
+  )
+```
+
+Some people don't have any unstim measurements:
+
+```{r}
+uns_tbl_filter <- data_tidy_mtbvac_050 |>
+  dplyr::group_by(
+    vaccine, prid, cohort, ptid, timepoint, subset,
+    node
+  ) |>
+  dplyr::filter(
+    sum(stim == "uns") == 0L
+    ) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(
+    vaccine, prid, cohort, ptid, timepoint
+  )
+uns_tbl_filter
+```
+
+We'll exclude them:
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::anti_join(
+    uns_tbl_filter |>
+      dplyr::select(ptid, timepoint),
+    by = c("ptid", "timepoint")
+  )
+```
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  UtilsCytoRSV::subtract_background(
+    grp = c(
+      "vaccine", "prid", "cohort", "ptid",
+      "timepoint", "subset", "node"
+    ),
+    uns = "uns",
+    stim = "stim",
+    resp = "response"
+  )
+```
+
+Let's remove the stim column now:
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::select(-stim)
+```
+
+Let's rename node to `cyt_combn`:
+
+```{r}
+data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
+  dplyr::rename(
+    cyt_combn = node
+  )
 ```
 
 # Joining
@@ -1105,9 +1522,16 @@ data_tidy_vacc_freq <- dplyr::bind_rows(
   data_tidy_mva85a_tb008,
   data_tidy_mva85a_tb011,
   data_tidy_h56,
-  data_tidy_h1
+  data_tidy_h1,
+  data_tidy_bcg_040
 )
 ```
+
+So, I need to:
+
+- Choose the correct cohort
+- get the sex data
+- add the infxn column (based on cohort)
 
 ```{r}
 UtilsDataRSV::view_cols(data_tidy_vacc_freq)
