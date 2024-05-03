@@ -1,0 +1,30 @@
+build:
+  github:
+    archive:
+      content:
+      - data-raw-public
+      - output-public
+      send:
+        sync-approach: sync-using-deletion
+        version-source: none
+  osf:
+    archive-public:
+      content:
+      - data-raw-public
+      - output-public
+      path: DataTidy/archive
+      id: fsq4b
+      send:
+        sync-approach: sync-using-deletion
+        version-source: none
+    archive-private:
+      content:
+      - data-raw-private
+      - data-raw-other
+      - docs
+      - output-private
+      path: DataTidy/archive
+      id: gzt24
+      send:
+        sync-approach: sync-using-deletion
+        version-source: none

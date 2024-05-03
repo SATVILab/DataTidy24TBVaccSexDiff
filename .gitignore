@@ -1,0 +1,22 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+_projr-local.yml
+SCRATCH.R
+
+# Start of projr section: do not edit by hand (until `# End of projr section`)
+_tmp/**
+_output/**
+_data_raw/public/**
+_data_raw/private/**
+_site/**
+_output/private/**
+_output/public/**
+_data_raw/other/**
+# End of projr section
+
+
+/.quarto/
+

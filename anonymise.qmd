@@ -1,0 +1,1118 @@
+---
+title: Anonymise data
+author: "Miguel Rodo"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r setup, include = FALSE}
+library(tibble)
+for (x in list.files("R", full.names = TRUE)) {
+  source(x)
+}
+```
+
+# Sex data
+
+Here is the spreadsheet with the sex data:
+
+## C035_456
+
+```{r}
+data_raw_sex_c035_456 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MiguelData26032024.xlsx"
+  ),
+  sheet = "C035_456"
+)
+data_tidy_sex_c035_456 <- data_raw_sex_c035_456 |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    sex = tolower(sex),
+    ptid = tolower(ptid)
+  ) |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_c035_456)
+```
+
+## ID93
+
+```{r}
+data_raw_sex_id93 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MiguelData26032024.xlsx"
+  ),
+  sheet = "ID93_GLA_SE "
+)
+data_tidy_sex_id93 <- data_raw_sex_id93 |>
+  janitor::clean_names() |>
+  dplyr::rename(
+    sex = gender
+  ) |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_id93)
+```
+
+## TB008
+
+```{r}
+data_raw_sex_tb008 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MiguelData26032024.xlsx"
+  ),
+  sheet = "TB008"
+)
+data_tidy_sex_tb008 <- data_raw_sex_tb008 |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_tb008)
+```
+
+## TB010
+
+```{r}
+data_raw_sex_tb011 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MiguelData26032024.xlsx"
+  ),
+  sheet = "TB011"
+)
+data_tidy_sex_tb011 <- data_raw_sex_tb011 |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_tb011)
+```
+
+## H1
+
+```{r}
+data_raw_sex_h1 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MiguelData26032024.xlsx"
+  ),
+  sheet = "H1"
+)
+data_tidy_sex_h1 <- data_raw_sex_h1 |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_h1)
+```
+
+# `02_Feb.xlsx` spreadsheet
+
+These are the data from `02_Feb.xlsx`.
+I think these data were collated by One.
+
+```{r}
+main_tbl <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "02_Feb.xlsx"
+  )
+)
+```
+
+These are the vaccine and protocol combinations for which we have information here:
+
+```{r}
+main_tbl |>
+  dplyr::group_by(`Protocol ID`, Vaccine) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::select(`Protocol ID`, Vaccine)
+```
+
+## Aeras402
+
+This is for protocol `003` (NHREC no. 1381).
+
+```{r}
+aeras_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "402.003")
+aeras_tbl_pid <- aeras_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+aeras_tbl_pid
+```
+
+There are nine here and nine in the 2019 paper, so this seems correct.
+
+```{r}
+readr::write_csv(
+  aeras_tbl,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "003-Aeras402.csv"
+  )
+)
+```
+
+## H56
+
+This is for protocol `402.032`.
+
+```{r}
+h56_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "402.032")
+h56_tbl_pid <- h56_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+h56_tbl_pid
+```
+
+There are only 8 subjects here, and used 27 in the 2019 paper (15 uninfected and 12 infected), so we won't save this one (as per conversation with Tom).
+
+## M72
+
+### GSK.010
+
+This is for protocol `GSK.010`.
+
+```{r}
+gsk_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "GSK.010")
+gsk_tbl_pid <- gsk_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+gsk_tbl_pid
+```
+
+```{r}
+readr::write_csv(
+  gsk_tbl_pid,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids", "GSK.010-M72.csv"
+  )
+)
+```
+
+Here are the sex data for the 010 trial:
+
+```{r}
+
+```
+
+### GSK.012
+
+This is for protocol `GSK.012`.
+
+```{r}
+gsk_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "GSK.012")
+gsk_tbl_pid <- gsk_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+gsk_tbl_pid
+```
+
+```{r}
+readr::write_csv(
+  gsk_tbl_pid,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "GSK.012-M72.csv"
+  )
+)
+```
+
+## MVA85A
+
+### TB008
+
+This is for protocol `TB008`.
+
+```{r}
+mva_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "MVA.008")
+mva_tbl_pid <- mva_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+mva_tbl_pid
+```
+
+```{r}
+readr::write_csv(
+  mva_tbl_pid,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "TB008-MVA85A.csv"
+  )
+)
+```
+
+Let's merge this with the sex data.
+
+```{r}
+data_tidy_sex_tb008$ptid |> unique() |> sort()
+```
+
+```{r}
+mva_tbl_pid$PatientID |> unique() |> sort()
+```
+
+```{r}
+data_tidy_sex_mva85a_tb008 <- mva_tbl_pid |>
+  dplyr::rename(ptid = PatientID) |>
+  dplyr::left_join(
+    data_tidy_sex_tb008 |>
+      dplyr::rename(ptid = pid) |>
+      dplyr::mutate(
+        ptid = gsub("^m01\\-", "", ptid)
+      ),
+    by = "ptid"
+  ) |>
+  dplyr::mutate(
+    prid = "tb008",
+    vaccine = "mva85a"
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, sex
+  )
+```
+
+There is one entry with no sex data:
+
+```{r}
+data_tidy_sex_mva85a_tb008 |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+```{r}
+mva_tbl_immune_tb008 <- mva_tbl |>
+  dplyr::rename(
+    ptid = PatientID
+  ) |>
+  dplyr::mutate(
+    ptid = tolower(ptid)
+  ) |>
+  dplyr::rename(
+    prid = `Protocol ID`
+  ) |>
+  dplyr::mutate(
+    prid = "tb008"
+  ) |>
+  dplyr::rename(
+    vaccine = Vaccine
+  ) |>
+  dplyr::mutate(
+    vaccine = tolower(vaccine)
+  ) |>
+  dplyr::rename(
+    infxn = Infxn
+  ) |>
+  dplyr::rename(
+    timepoint = TimePoint
+  ) |>
+  dplyr::select(-starts_with("Tot")) |>
+  tidyr::pivot_longer(
+    -c(ptid, prid, vaccine, infxn, timepoint),
+    names_to = "cyt_combn",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    cyt_combn = tolower(cyt_combn),
+    subset = ifelse(grepl("cd4", cyt_combn), "cd4", "cd8"),
+    subset = ifelse(grepl("cdpos8", cyt_combn), "cd8", subset),
+    cyt_combn = gsub("^cd4|^cd8|^cdpos8", "", cyt_combn),
+    cyt_combn = gsub("^pos", "", cyt_combn)
+  ) |>
+  dplyr::mutate(
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17"),
+      pos_ind = "pos", neg_ind = "neg"
+    )
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response
+  )
+data_tidy_mva85a_tb008 <- mva_tbl_immune_tb008 |>
+  dplyr::left_join(
+    data_tidy_sex_mva85a_tb008 |> dplyr::select(ptid, sex),
+    by = "ptid"
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(infxn == "positive", "infected", "uninfected")
+  )
+set.seed(2)
+data_tidy_mva85a_tb008 <- data_tidy_mva85a_tb008 |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, vaccine, prid)
+  ) |>
+  dplyr::filter(!is.na(sex))
+```
+
+### MVA.011
+
+This is for protocol `TB011`.
+
+```{r}
+mva_tbl_tb011 <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "MVA.011")
+mva_tbl_pid_tb011 <- mva_tbl_tb011 |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+mva_tbl_pid_tb011
+```
+
+```{r}
+readr::write_csv(
+  mva_tbl_pid_tb011,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "TB011-MVA85A.csv"
+  ),
+)
+```
+
+Let's merge this with the sex data.
+
+```{r}
+data_tidy_sex_tb011$pid |> unique() |> sort()
+```
+
+```{r}
+mva_tbl_pid_tb011$PatientID |> unique() |> sort()
+```
+
+Seems like the match isn't complete, but we should get something if we remove `m03-` from the sex table.
+
+```{r}
+data_tidy_sex_mva85a_tb011 <- mva_tbl_pid_tb011 |>
+  dplyr::rename(ptid = PatientID) |>
+  dplyr::mutate(
+    ptid = gsub("^1\\.", "", ptid)
+  ) |>
+  dplyr::left_join(
+    data_tidy_sex_tb011 |>
+      dplyr::rename(ptid = pid) |>
+      dplyr::mutate(
+        ptid = gsub("^m03\\-", "", ptid)
+      ),
+    by = "ptid"
+  ) |>
+  dplyr::mutate(
+    prid = "tb011",
+    vaccine = "mva85a"
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, sex
+  )
+```
+
+There are two entries with no pid dataL
+
+```{r}
+data_tidy_sex_mva85a_tb011 |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+There is no 101 or 102 (prefix aside, including with a leading zero) in the raw sex data, but there are m03-1010 and m03-1020.
+
+Okay, now let's merge the two...
+
+```{r}
+mva_tbl_tb011_immune <- mva_tbl_tb011 |>
+  dplyr::rename(
+    ptid = PatientID
+  ) |>
+  dplyr::mutate(
+    ptid = tolower(ptid)
+  ) |>
+  dplyr::rename(
+    prid = `Protocol ID`
+  ) |>
+  dplyr::mutate(
+    prid = "tb011"
+  ) |>
+  dplyr::rename(
+    vaccine = Vaccine
+  ) |>
+  dplyr::mutate(
+    vaccine = tolower(vaccine)
+  ) |>
+  dplyr::rename(
+    infxn = Infxn
+  ) |>
+  dplyr::rename(
+    timepoint = TimePoint
+  ) |>
+  dplyr::select(-starts_with("Tot")) |>
+  tidyr::pivot_longer(
+    -c(ptid, prid, vaccine, infxn, timepoint),
+    names_to = "cyt_combn",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    cyt_combn = tolower(cyt_combn),
+    subset = ifelse(grepl("cd4", cyt_combn), "cd4", "cd8"),
+    subset = ifelse(grepl("cdpos8", cyt_combn), "cd8", subset),
+    cyt_combn = gsub("^cd4|^cd8|^cdpos8", "", cyt_combn),
+    cyt_combn = gsub("^pos", "", cyt_combn)
+  ) |>
+  dplyr::mutate(
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17"),
+      pos_ind = "pos", neg_ind = "neg"
+    )
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response
+  )
+data_tidy_mva85a_tb011 <- mva_tbl_tb011_immune |>
+  dplyr::mutate(
+    ptid = gsub("^1\\.", "", ptid)
+  ) |>
+  dplyr::left_join(
+    data_tidy_sex_mva85a_tb011 |>
+      dplyr::select(ptid, sex),
+    by = "ptid"
+  ) |>
+  dplyr::select(vaccine:ptid, sex, infxn:response) |>
+  dplyr::mutate(
+    infxn = ifelse(infxn == "positive", "infected", "uninfected")
+  )
+set.seed(3214234)
+data_tidy_mva85a_tb011 <- data_tidy_mva85a_tb011 |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, vaccine, prid)
+  ) |>
+  dplyr::filter(!is.na(sex))
+```
+
+## BCG
+
+This is for protocol `TBRU`.
+
+```{r}
+bcg_tbl <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "TBRU")
+bcg_tbl_pid <- bcg_tbl |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+bcg_tbl_pid
+```
+
+```{r}
+readr::write_csv(
+  bcg_tbl_pid,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "TBRU-BCG.csv"
+  ),
+)
+```
+
+## H56
+
+This is for protocol `C-035-456`.
+
+```{r}
+h56_tbl_raw <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "161115_All H56-035 data.xlsx"
+  )
+)
+```
+
+Okay, the grouping information is a bit complicated. Overall, we want:
+
+- those given 5 micrograms twice
+- 15 uninfected and 12 infected
+
+So, that is:
+
+- group 1 with `Dose` 5 for uninfected
+- group 3 (removing the Placebo entries)
+
+Here we go:
+
+```{r}
+h56_tbl_uninf <- h56_tbl_raw |>
+  dplyr::filter(
+    Group == 1, Dose == 5
+  )
+h56_tbl_uninf_pid <- h56_tbl_uninf |>
+  dplyr::group_by(PTID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PTID) |>
+  dplyr::ungroup()
+h56_tbl_uninf_pid
+```
+
+```{r}
+h56_tbl_inf <- h56_tbl_raw |>
+  dplyr::filter(
+    Group == 3, `Vaccine/Placebo` == "vaccine"
+  )
+h56_tbl_inf_pid <- h56_tbl_inf |>
+  dplyr::group_by(PTID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PTID) |>
+  dplyr::ungroup()
+h56_tbl_inf_pid
+```
+
+These are correct, so we'll merge them and save them.
+
+```{r}
+h56_tbl <- dplyr::bind_rows(
+  h56_tbl_uninf_pid,
+  h56_tbl_inf_pid
+)
+readr::write_csv(
+  h56_tbl,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "C-035-456-H56.csv"
+  ),
+)
+```
+
+Now, let's merge these with the sex data.
+
+```{r}
+data_tidy_sex_c035_456$ptid |> unique()
+```
+
+```{r}
+h56_tbl$PTID |> unique()
+```
+
+```{r}
+# h56_tbl_non_sex_merge <-
+h56_tbl_raw_wide <- h56_tbl_raw |>
+  dplyr::rename(ptid = PTID) |>
+  dplyr::mutate(ptid = tolower(ptid)) |>
+  dplyr::select(-Group) |>
+  dplyr::rename(
+    infxn = LTBI
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(infxn == "pos", "infected", "uninfected")
+  ) |>
+  dplyr::rename(
+    stim = Stimulation
+  ) |>
+  dplyr::mutate(
+    stim = tolower(stim)
+  ) |>
+  dplyr::filter(
+    stim != "pha"
+  ) |>
+  dplyr::rename(
+    timepoint = `Study Day`
+  ) |>
+  dplyr::mutate(
+    timepoint = as.numeric(timepoint)
+  ) |>
+  dplyr::filter(
+    `Vaccine/Placebo` == "vaccine"
+  ) |>
+  dplyr::select(
+    -`Vaccine/Placebo`
+  ) |>
+  dplyr::mutate(
+    subset = "cd4"
+  )
+h56_tbl_tmp <- h56_tbl_raw_wide |>
+  dplyr::select(
+    -c(Dose, `Regimen (#injections)`)
+  ) |>
+  dplyr::mutate(
+    across(starts_with("g"), ~ . / `CD4+` * 1e2)
+  ) |>
+  dplyr::select(-starts_with("CD4+")) |>
+  dplyr::select(-`g-T-2-17-`) |>
+  tidyr::pivot_longer(
+    `g+T+2+17+`:`g-T-2-17+`,
+    names_to = "cyt_combn",
+    values_to = "response"
+  )
+h56_tbl_tmp <- h56_tbl_tmp |>
+  dplyr::mutate(
+    cyt_combn = tolower(cyt_combn),
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17")
+    )#,
+    #cyt_combn = names(cyt_combn)
+  ) |>
+  dplyr::group_by(
+    ptid, infxn, timepoint, subset, cyt_combn
+  )
+# seems to be no unstim for id_03008 or id_03019 at D14, so we exclude these:
+h56_tbl_tmp <- h56_tbl_tmp |>
+  dplyr::filter(
+    !(ptid == "id_03019" & timepoint == 14),
+    !(ptid == "id_03008" & timepoint == 14)
+  )
+h56_tbl_non_sex_merge <- h56_tbl_tmp |>
+  dplyr::summarise(
+    response_stim = sum(response[stim %in% c("esat6", "ag85b", "rv2660")]),
+    response_uns = response[stim == "uns"],
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    response = response_stim - response_uns
+  ) |>
+  dplyr::mutate(
+    stim = "esat6 + ag85b + rv2660"
+  ) |>
+  dplyr::select(
+    -c(response_stim, response_uns)
+  ) |>
+  dplyr::select(
+    ptid, infxn, timepoint, stim, subset, cyt_combn, response, everything()
+  ) |>
+  dplyr::select(-stim)
+data_tidy_h56 <- h56_tbl_non_sex_merge |>
+  dplyr::left_join(
+    data_tidy_sex_c035_456 |>
+      dplyr::mutate(ptid = tolower(ptid)) |>
+      dplyr::select(ptid, sex),
+    by = "ptid"
+  ) |>
+  dplyr::filter(
+    ptid %in% tolower(
+      h56_tbl$PTID
+    )
+  ) |>
+  dplyr::mutate(
+    vaccine = "h56",
+    prid = "c-035-456"
+  ) |>
+  dplyr::select(
+    vaccine, prid, everything()
+  )
+```
+
+There are no entries with missing sex data:
+
+```{r}
+data_tidy_h56 |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_h56)
+```
+
+```{r}
+set.seed(21)
+data_tidy_h56 <- data_tidy_h56 |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, "h56", "c-035-456")
+  )
+```
+
+# H1
+
+## Bool/Total sheets
+
+This is for protocol `THYB-04`.
+
+```{r}
+h1_tbl_bool <- readr::read_delim(
+  projr::projr_path_get("data-raw-private", "H1 THYB04-Cyto Boolean Freq_Merged.txt"), delim = "\t"
+)
+h1_tbl_bool_pid <- h1_tbl_bool |>
+  dplyr::group_by(SubjectID) |>
+  dplyr::slice(1) |>
+  dplyr::select(SubjectID) |>
+  dplyr::ungroup()
+h1_tbl_bool_sample <- h1_tbl_bool |>
+  dplyr::group_by(SubjectID, `$FIL`, Sample) |>
+  dplyr::slice(1) |>
+  dplyr::select(SubjectID, `$FIL`) |>
+  dplyr::ungroup()
+
+h1_tbl_total <- readr::read_delim(
+  projr::projr_path_get("data-raw-private", "H1 THYB04-Total Cytok Freq_Merged.txt"), delim = "\t"
+)
+h1_tbl_total_pid <- h1_tbl_total |>
+  dplyr::group_by(SubjectID) |>
+  dplyr::slice(1) |>
+  dplyr::select(SubjectID) |>
+  dplyr::ungroup()
+h1_tbl_total_pid
+```
+
+There are 227 here, but this seems excessive, as we only want 58 (34 uninfected and 24 infected).
+
+## Main
+
+This is for protocol `THYB-04`.
+
+```{r}
+h1_tbl_main <- main_tbl |>
+  dplyr::filter(`Protocol ID` == "THYB-04")
+h1_tbl_main_pid <- h1_tbl_main |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::select(PatientID) |>
+  dplyr::ungroup()
+h1_tbl_main_pid
+```
+
+## H1.Data.Stat.2015.04.14FL.xlsx sheet
+
+So, here we also have too many donor IDs - 218.
+However, we now have group information.
+
+So, as per the paper we had individuals who were vaccinated twice and who received the 15microgram dose.
+There are 60 of them who started and 59 of them who completed,
+as per the original paper.
+
+Here, we only have information for 56 pids, however, from group 1:
+
+```{r}
+h1_tbl_fl <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "H1.Data.Stat.2015.04.14FL.xlsx"
+  )
+)
+h1_tbl_fl_pid <- h1_tbl_fl |>
+  dplyr::filter(
+    grepl("^Group 1", Group)
+  ) |>
+  dplyr::group_by(`Donor.ID`) |>
+  dplyr::slice(1) |>
+  dplyr::select(`Donor.ID`) |>
+  dplyr::ungroup()
+h1_tbl_fl_pid
+```
+
+## Resolving H1
+
+So, as per the paper we had individuals who were vaccinated twice and who received the 15microgram dose.
+There are 60 of them who started and 59 of them who completed,
+as per the original paper.
+
+From the `main_tbl` sheet, we have 58 donor IDs, which corresponds to how many were used in the 2019 paper (as per what the paper says, )
+
+In the `FL.xlsx` sheet, we have only 56 donor IDs.
+They are also prefixed by `ID0...` to have constant length.
+Let's check if they match otherwise.
+
+```{r}
+h1_vec_fl <- gsub("^ID", "", h1_tbl_fl_pid$`Donor.ID`) |>
+  as.numeric() |>
+  unique()
+h1_vec_main <- h1_tbl_main_pid$PatientID |>
+  as.numeric()
+```
+
+There seem to be mismatches between the two groups, that go deeper than just the FL sheet having two fewer entries.
+
+The `main` sheet has the following four entries extra:
+
+```{r}
+setdiff(h1_vec_main, h1_vec_fl)
+```
+
+If we see where the match up in the `FL` sheet, none of them appear in the `FL` spreadsheet:
+
+```{r}
+h1_tbl_fl |>
+  dplyr::filter(
+    `Donor.ID` %in%
+    c("ID0221", "ID0225", "ID0229", "ID0037")
+  )
+```
+
+These two IDs appear in the `FL` spreadsheet but not the main spreadsheet:
+
+```{r}
+setdiff(h1_vec_fl, h1_vec_main)
+```
+
+Now, we can compare to the first H1 spreadsheet:
+
+```{r}
+h1_vec_bool <- h1_tbl_bool_pid$SubjectID
+h1_vec_total <- h1_tbl_total_pid$SubjectID
+identical(h1_vec_bool |> sort(), h1_vec_total |> sort())
+```
+
+Both result in exactly the same PIDs, so we use just the one.
+
+Now, comparing `FL` and `main` to `bool`, we see that `FL` has the same two extra over `bool` and that `main` and `bool` are identical:
+
+```{r}
+setdiff(h1_vec_fl, h1_vec_bool)
+setdiff(h1_vec_main, h1_vec_bool)
+```
+
+Now we can compare to the processed data used in the paper:
+
+```{r}
+load("_data_raw/public/check/tmaxSub17ExcTbl.rda")
+data_check <- tmaxSub17ExcTbl
+data_check_vec <- data_check |>
+  dplyr::filter(grepl("^h1", ptid)) |>
+  dplyr::pull(ptid) |>
+  unique()
+data_check_vec <- gsub("^h1_", "", data_check_vec) |>
+  as.numeric() |>
+  unique()
+```
+
+Comparing, we see that they have completely different entries, indicating that the processed data was appropriately anonymised:
+
+```{r}
+setdiff(data_check_vec, h1_vec_main)
+setdiff(h1_vec_main, data_check_vec)
+```
+
+However, we see that both the processed data and the h1 data are the same length.
+
+Okay, so I think we take the PIDs from the `main` spreadsheet as correct, based on the following:
+
+- It matches perfectly with the `Bool`/`Total` spreadsheets.
+- It has the same number as both the paper itself and the processed data.
+- The `FL` datasheet largely confirms it, as it does have grouping information (group 1, two doses of 15 micrograms).
+  - It does, however, not match exactly. It is possible, however, that it was manually edited, thus inducing mistakes. It is not clear why the numbers are slightly different, however - perhaps not all samples were processed by then, seeing as it was 2015?
+
+I'll send Humphrey the data with the IDs as the numbers and the IDs made to have length six.
+
+```{r}
+h1_tbl_final <- tibble::tibble(pid = h1_vec_main)
+pid_long_vec <- vapply(h1_tbl_final$pid, function(x) {
+  n_rep <- 4 - nchar(x)
+  zero_chr <- rep(0, n_rep) |> paste0(collapse = "")
+  paste0("ID", zero_chr, x)
+}, character(1))
+h1_tbl_final <- h1_tbl_final |>
+  dplyr::mutate(
+    pid_long = pid_long_vec
+  )
+h1_tbl_final
+```
+
+```{r}
+readr::write_csv(
+  h1_tbl_final,
+  projr::projr_path_get(
+    "output-private", "unanonymised_pids",
+    "THYB-04-H1.csv"
+  ),
+)
+```
+
+
+```{r}
+data_tidy_sex_h1$pid |> unique() |> sort()
+data_tidy_sex_h1$pid_long |> unique() |> sort()
+```
+
+```{r}
+h1_tbl_final$pid |> unique() |> sort()
+h1_tbl_final$pid_long |> unique() |> sort()
+```
+
+We'll merge on `pid`, and check that the leading zeroes don't cause problems.
+
+
+There are no entries with missing sex data:
+
+```{r}
+h1_tbl_bool_join <- h1_tbl_bool |>
+  dplyr::rename(
+    ptid = SubjectID
+  ) |>
+  dplyr::mutate(
+    ptid = as.character(ptid)
+  ) |>
+  # remove entries from groups we're
+  # not interested in
+  dplyr::filter(
+    ptid %in% h1_tbl_final$pid
+  ) |>
+  dplyr::select(
+    -c(Sample, `$FIL`)
+  ) |>
+  dplyr::rename(
+    infxn = QFT,
+    stim = `TUBE NAME`
+  ) |>
+  dplyr::mutate(
+    stim = tolower(stim),
+    Timepoint = gsub("^day ", "", Timepoint |> tolower()) |>
+      as.numeric()
+  ) |>
+  dplyr::rename(
+    timepoint = Timepoint,
+    subset = Subset
+  ) |>
+  dplyr::mutate(
+    prid = "thyb04",
+    vaccine = "h1"
+  )
+h1_tbl_sex_join <- data_tidy_sex_h1 |>
+  dplyr::rename(ptid = pid) |>
+  dplyr::mutate(ptid = gsub("^0+", "", ptid)) |>
+  dplyr::select(ptid, sex)
+
+data_tidy_h1_unanon_wide <- h1_tbl_bool_join |>
+  dplyr::left_join(
+    h1_tbl_sex_join,
+    by = "ptid"
+  )
+
+data_tidy_h1_unanon_wide <- data_tidy_h1_unanon_wide |>
+  dplyr::mutate(
+    subset = tolower(subset)
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(infxn == "2", "infected", "uninfected")
+  )
+
+data_tidy_h1_unanon_wide <- data_tidy_h1_unanon_wide |>
+  dplyr::select(
+    vaccine, prid, ptid, sex, infxn, timepoint, stim, subset, everything()
+  )
+data_tidy_h1_unanon <- data_tidy_h1_unanon_wide |>
+  tidyr::pivot_longer(
+    -c(vaccine:subset),
+    names_to = "cyt_combn",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    cyt_combn = tolower(cyt_combn),
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17")
+    )# ,
+    #cyt_combn = names(cyt_combn),
+    # cyt_combn = .cyt_combn_reorder(
+    #   cyt_combn, c("g", "2", "t", "17")
+    # )
+  )
+data_tidy_h1_unanon <- data_tidy_h1_unanon |>
+  # dplyr::mutate(
+  #   cyt_combn = names(cyt_combn)
+  # ) |>
+  dplyr::filter(!grepl("pha", stim)) |>
+  dplyr::filter(!cyt_combn == "g-2-t-17-")
+```
+
+No missing sex data:
+
+```{r}
+data_tidy_h1_unanon |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+I would defer summing over stims, but we've already done that for other ones, so we might as well now.
+
+```{r}
+data_tidy_h1_unanon_calc <- data_tidy_h1_unanon |>
+  dplyr::group_by(
+    vaccine, prid, ptid, sex, infxn, timepoint, subset, cyt_combn
+  ) |>
+  dplyr::summarise(
+    response_stim = sum(response[stim %in% c("esat6", "ag85b")]),
+    response_uns = response[stim == "uns"],
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    response = response_stim - response_uns
+  ) |>
+  dplyr::select(
+    -c(response_stim, response_uns)
+  )
+```
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_h1_unanon_calc)
+```
+
+```{r}
+set.seed(45)
+data_tidy_h1 <- data_tidy_h1_unanon_calc |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, .data$vaccine, .data$prid)
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(
+    subset = gsub("\\+|\\-", "", subset)
+  )
+```
+
+# 040
+
+```{r}
+data_raw_bcg_040 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "MergedDemoImmu29042024Copy.xlsx"
+  )
+)
+```
+
+```{r}
+data_tidy_bcg_040 <- data_raw_bcg_040 |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+colnames(data_tidy_bcg_040) <- tolower(
+  colnames(data_tidy_bcg_040)
+)
+colnames(data_tidy_bcg_040)[
+   which(colnames(data_tidy_bcg_040) == "arm")[2]
+] <- "arm_2"
+```
+
+```{r}
+data_tidy_bcg_040 |>
+  dplyr::select(
+    subjid, group, arm, arm_2, sex, timepoint, stim, cellsubset, datatype
+  ) |>
+  UtilsDataRSV::view_cols()
+```
+
+# MTBVAC 050
+
+```{r}
+
+```
+
+# Joining
+
+```{r}
+data_tidy_vacc_freq <- dplyr::bind_rows(
+  data_tidy_mva85a_tb008,
+  data_tidy_mva85a_tb011,
+  data_tidy_h56,
+  data_tidy_h1
+)
+```
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_vacc_freq)
+```
+
+```{r}
+projr::projr_use_data(data_tidy_vacc_freq, overwrite = TRUE)
+```

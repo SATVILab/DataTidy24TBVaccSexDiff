@@ -1,0 +1,35 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^_projr-local\.yml$
+^\.gitpod\.yml$
+^\.devcontainer$
+^\.devcontainer/
+
+
+^LICENSE\.md$
+^README\.Rmd$
+# Start of projr section: do not edit by hand (until `# End of projr section`)
+^_data_raw/
+^_data_raw$
+^_tmp/
+^_tmp$
+^_output/
+^_output$
+^_archive/
+^_archive$
+^_site/
+^_site$
+^_data_raw/public/
+^_data_raw/public$
+^_data_raw/private/
+^_data_raw/private$
+^_output/private/
+^_output/private$
+^_output/public/
+^_output/public$
+^_data_raw/other/
+^_data_raw/other$
+# End of projr section
+

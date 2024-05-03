@@ -1,0 +1,46 @@
+directories:
+  data-raw-public:
+    path: _data_raw/public
+  data-raw-private:
+    path: _data_raw/private
+  data-raw-other:
+    path: _data_raw/other
+  cache:
+    path: _tmp
+  output-private:
+    path: _output/private
+  output-public:
+    path: _output/public
+  docs:
+    path: _site
+build:
+  github:
+    latest:
+      content:
+      - data-raw-public
+      - output-public
+      structure: latest
+      send:
+        version-source: none
+  osf:
+    latest-public:
+      content:
+      - data-raw-public
+      - output-public
+      path: DataTidy/latest
+      structure: latest
+      id: fsq4b
+      send:
+        version-source: none
+    latest-private:
+      content:
+      - data-raw-private
+      - data-raw-other
+      - docs
+      - output-private
+      path: DataTidy/latest
+      structure: latest
+      id: gzt24
+      send:
+        version-source: none
+

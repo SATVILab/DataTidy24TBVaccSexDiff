@@ -1,0 +1,13 @@
+image: gitpod/workspace-base
+
+tasks:
+  - name: Set-up R, apptainer
+    command: |
+        ./scripts/all/post_create_command.sh 
+
+vscode:
+  extensions:
+    - sourcegraph.cody-ai
+    - quarto.quarto
+    - REditorSupport.r
+    - bierner.markdown-preview-github-styles
