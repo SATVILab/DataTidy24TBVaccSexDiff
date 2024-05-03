@@ -1053,7 +1053,7 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
     ptid = subjid
   ) |>
   dplyr::select(
-    vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response
+    vaccine, prid, ptid, sex, infxn, timepoint, subset, cyt_combn, response
   )
 ```
 
@@ -1615,7 +1615,7 @@ Sum over IL17:
 ```{r}
 data_tidy_h1_unanon_calc <- data_tidy_h1_unanon_calc |>
   UtilsCytoRSV::sum_over_markers(
-    grp = c("ptid", "prid", "vaccine", "infxn", "timepoint", "subset"),
+    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset"),
     cmbn = "cyt_combn",
     markers_to_sum = c("17"),
     resp = "response"
@@ -2042,7 +2042,6 @@ data_tidy_vacc_freq <- dplyr::bind_rows(
   data_tidy_mva85a_tb011,
   data_tidy_h56,
   data_tidy_h1,
-  data_tidy_id93,
   data_tidy_bcg_040
 )
 ```
@@ -2053,4 +2052,19 @@ UtilsDataRSV::view_cols(data_tidy_vacc_freq)
 
 ```{r}
 projr::projr_use_data(data_tidy_vacc_freq, overwrite = TRUE)
+```
+
+```{r}
+data_tidy_vacc_freq |>
+  dplyr::group_by(
+    vaccine, infxn, sex, ptid
+  ) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(
+    vaccine, infxn, sex
+  ) |>
+  dplyr::summarise(
+    count = dplyr::n()
+  )
 ```
