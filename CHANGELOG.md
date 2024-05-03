@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- Patch (v1.11.1): Miguel Julio Rodo (15:12:16)
+  - Remove IDRI data without males and correct sex column
 - *Minor* (v1.11.0): Miguel Julio Rodo (14:48:13)
   - Add 040 and id93 data
 
