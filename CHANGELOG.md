@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- *Minor* (v1.11.0): Miguel Julio Rodo (14:48:13)
+  - Add 040 and id93 data
+
 - Patch (v1.10.1): Miguel Julio Rodo (08:39:25)
   - Add raw datasets
 - *Minor* (v1.10.0): Miguel Julio Rodo (22:52:22)
