@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- Patch (v1.10.1): Miguel Julio Rodo (08:39:25)
+  - Add raw datasets
 - *Minor* (v1.10.0): Miguel Julio Rodo (22:52:22)
   - Add H1, H56 and MVA85A data with sex data merged
 
