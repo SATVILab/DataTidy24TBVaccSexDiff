@@ -29,7 +29,7 @@ build:
       - output-public
       path: DataTidy/latest
       structure: latest
-      id: fsq4b
+      id: 93d4x
       send:
         version-source: none
     latest-private:
@@ -40,7 +40,7 @@ build:
       - output-private
       path: DataTidy/latest
       structure: latest
-      id: gzt24
+      id: eqw6s
       send:
         version-source: none
 

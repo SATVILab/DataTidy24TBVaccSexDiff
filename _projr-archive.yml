@@ -13,7 +13,7 @@ build:
       - data-raw-public
       - output-public
       path: DataTidy/archive
-      id: fsq4b
+      id: 93d4x
       send:
         sync-approach: sync-using-deletion
         version-source: none
@@ -24,7 +24,7 @@ build:
       - docs
       - output-private
       path: DataTidy/archive
-      id: gzt24
+      id: eqw6s
       send:
         sync-approach: sync-using-deletion
         version-source: none
