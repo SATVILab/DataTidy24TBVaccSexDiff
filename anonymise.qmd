@@ -149,15 +149,6 @@ aeras_tbl_pid
 
 There are nine here and nine in the 2019 paper, so this seems correct.
 
-```{r}
-readr::write_csv(
-  aeras_tbl,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "003-Aeras402.csv"
-  )
-)
-```
 
 ## H56
 
@@ -193,15 +184,6 @@ gsk_tbl_pid <- gsk_tbl |>
 gsk_tbl_pid
 ```
 
-```{r}
-readr::write_csv(
-  gsk_tbl_pid,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids", "GSK.010-M72.csv"
-  )
-)
-```
-
 Here are the sex data for the 010 trial:
 
 ```{r}
@@ -223,16 +205,6 @@ gsk_tbl_pid <- gsk_tbl |>
 gsk_tbl_pid
 ```
 
-```{r}
-readr::write_csv(
-  gsk_tbl_pid,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "GSK.012-M72.csv"
-  )
-)
-```
-
 ## MVA85A
 
 ### TB008
@@ -248,16 +220,6 @@ mva_tbl_pid <- mva_tbl |>
   dplyr::select(PatientID) |>
   dplyr::ungroup()
 mva_tbl_pid
-```
-
-```{r}
-readr::write_csv(
-  mva_tbl_pid,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "TB008-MVA85A.csv"
-  )
-)
 ```
 
 Let's merge this with the sex data.
@@ -374,16 +336,6 @@ mva_tbl_pid_tb011 <- mva_tbl_tb011 |>
   dplyr::select(PatientID) |>
   dplyr::ungroup()
 mva_tbl_pid_tb011
-```
-
-```{r}
-readr::write_csv(
-  mva_tbl_pid_tb011,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "TB011-MVA85A.csv"
-  ),
-)
 ```
 
 Let's merge this with the sex data.
@@ -516,16 +468,6 @@ bcg_tbl_pid <- bcg_tbl |>
   dplyr::select(PatientID) |>
   dplyr::ungroup()
 bcg_tbl_pid
-```
-
-```{r}
-readr::write_csv(
-  bcg_tbl_pid,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "TBRU-BCG.csv"
-  ),
-)
 ```
 
 ### 040
@@ -814,19 +756,6 @@ h56_tbl_inf_pid
 
 These are correct, so we'll merge them and save them.
 
-```{r}
-h56_tbl <- dplyr::bind_rows(
-  h56_tbl_uninf_pid,
-  h56_tbl_inf_pid
-)
-readr::write_csv(
-  h56_tbl,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "C-035-456-H56.csv"
-  ),
-)
-```
 
 Now, let's merge these with the sex data.
 
@@ -1147,17 +1076,6 @@ h1_tbl_final <- h1_tbl_final |>
   )
 h1_tbl_final
 ```
-
-```{r}
-readr::write_csv(
-  h1_tbl_final,
-  projr::projr_path_get(
-    "output-private", "unanonymised_pids",
-    "THYB-04-H1.csv"
-  ),
-)
-```
-
 
 ```{r}
 data_tidy_sex_h1$pid |> unique() |> sort()
@@ -1522,8 +1440,7 @@ data_tidy_vacc_freq <- dplyr::bind_rows(
   data_tidy_mva85a_tb008,
   data_tidy_mva85a_tb011,
   data_tidy_h56,
-  data_tidy_h1,
-  data_tidy_bcg_040
+  data_tidy_h1
 )
 ```
 
