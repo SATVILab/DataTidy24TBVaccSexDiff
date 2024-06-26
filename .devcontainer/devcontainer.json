@@ -1,4 +1,5 @@
 /**
+ * Last modified: 2023 Nov 26
  * This JSON file contains the configuration for the development container used in the ProjectACSCyTOFTCells project.
  * It specifies the Docker image to use, as well as the features to install in the container.
  * The "ghcr.io/rocker-org/devcontainer-features/r-rig:1" feature installs R and related tools, while the "ghcr.io/rocker-org/devcontainer-features/quarto-cli:1" feature installs Quarto and TinyTeX.
@@ -7,20 +8,9 @@
  * The extensions specify extensions typically used in VS Code for R analyses.
  */
 {
-	"image": "bioconductor/bioconductor_docker:RELEASE_3_19",
+	"image": "ghcr.io/rocker-org/devcontainer/geospatial:4.4",
 	"features": {
-		"ghcr.io/MiguelRodo/DevContainerFeatures/git-xet:1": {},
-		"ghcr.io/MiguelRodo/DevContainerFeatures/repos:1": {},
-		"ghcr.io/MiguelRodo/DevContainerFeatures/config-r:1": {},
-		"ghcr.io/rocker-org/devcontainer-features/r-rig:1": {
-			"installDevTools": true,
-			"installREnv": true,
-			"installRadian": true,
-			"version": "none",
-			"pakVersion": "auto",
-			"vscodeRSupport": "full",
-			"pandocVersion": "auto"
-		}
+		"ghcr.io/MiguelRodo/DevContainerFeatures/config-r:1": {}
 	},
 	"customizations": {
 		"vscode": {
