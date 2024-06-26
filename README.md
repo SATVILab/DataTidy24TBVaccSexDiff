@@ -1,253 +1,41 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DataTidy19RodoVaccComp
+# DataTidy24TBVaccSexDiff
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-VaccCompData provides the raw data and the scripts used to process them
-for the paper ‘A comparison of antigen-specific T cell responses induced
-by six novel tuberculosis vaccine candidates’. Its installation is
-required to run the analysis script in the package VaccComp.
+The purpose of this repo is to prepare data for to
+compare vaccine-induced immune responses between males and females.
 
-Note that this is a more reproducible version of the GitHub repository
-`MiguelRodo/VaccCompData`.
+## Contact
 
-## Installation
+For more information, please contact:
+- Thomas J. Scriba, thomas.scriba@uct.ac.za
+- Miguel J. Rodo:
+  - miguel.rodo@uct.ac.za
+  - miguel.rodo@outlook.com
 
-To install VaccCompData, run:
+## Links
 
-    remotes::install_github("MiguelRodo/VaccCompData")
+- [OneDrive project homepage](https://uctcloud-my.sharepoint.com/:f:/r/personal/01463748_wf_uct_ac_za/Documents/Projects/Project24TBVaccSexDiff?csf=1&web=1&e=eIMJIM)
+- [Code compendium][https://github.com/SATVILab/Comp24TBVaccSexDiff]
 
-The processed data can be loaded as normal datasets from an R package.
+## Details
 
-## Reproducing
+### Reproduction instructions
 
-The raw data are kept in the release `input` on GitHub, and must be
-saved to the `data-raw-public` directory (as specified in `_projr.yml`)
-to run the data.
+#### GitHub Codespaces
 
-Then run `projr::projr_build_dev()` to rebuild the projects. The project
-outputs will be saved to the `cache` directory (as specified in
-`_projr.yml`).
+- Navigate to the [code compendium][https://github.com/SATVILab/Comp24TBVaccSexDiff]
+- Ensure that the code compendium GitHub Codespace has access to the following environment variables:
+  - `GITHUB_USERNAME`: your GitHub user name
+  - `GITHUB_PAT`: PAT for GitHub
+  - *If project uses XetHub*:
+    - `XETHUB_USERNAME`: Username for XetHub
+    - `XETHUB_EMAIL`: Email address for XetHub
+    - `XETHUB_PAT`: PAT for XetHub
+- Open GitHub Codespace at the code compendium
+- Change directory to `../DataTidy24TBVaccSexDiff`
+- Start `R`, restore `R` packages and run `projr::projr_build_dev`
 
-The schematic describes data processing by stage, specifying the outputs
-and processing files and providing details.
-<img src="_data_raw/public/img/Data_Prep_Flow.png" width="100%" />
-
-## Raw data
-
-This vignette first describes each of the raw data files.
-
-The raw data provided are not cell counts, but are the frequencies of
-cells producing some combination of the cytokines IFN*γ*, IL-2 and TNF.
-All raw data except that in the file megapool.csv also include IL-17,
-and the file bcg.xlsx also included IL-22.
-
-### Raw data files
-
-#### AERAS-402
-
--   File name
-    -   aeras402.xlsx
--   Columns
-    -   PatientID: participant identification number.
-    -   TubeName: stimulation condition.
-    -   TimePoint: Days since first vaccination.
-    -   CD4+2+17+G+T+ to CD8+2-17-G-T+
-        -   Indicates CD4/CD8 cell subset and cytokines produced.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   2\[+/-\]17\[+/-\]G\[+/-\]T\[+/-\] indicates the cytokine
-            combination. ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to
-            IFN*γ* and ‘T’ to TNF. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   Yes
-
-#### BCG
-
--   File name
-    -   bcg.xlsx
--   Sheets
-    -   CD4 and CD8
-    -   Frequencies for CD4 and CD8 T cells, respectively.
--   Columns
-    -   Sample: Sample label.
-    -   PTID: participant identification number.
-    -   Stimulation: stimulation condition.
-    -   Study Day
-        -   Days since initial vaccination.
-        -   ‘V08’ corresponds to day 0.
-        -   ‘V13’ corresponds to day 21.
-        -   ‘V15’ corresponds to day 35.
-        -   ‘V28’ corresponds to day 365.
-        -   QUESTION: need to find out what SC-3 and V01 are.
-    -   Group
-        -   The order of isonaizid, BCG and observation.
-        -   ‘IBO’ means isoniazid first, BCG second and observation
-            last.
-        -   ‘OBI’ means observation first, BCG second and isoniazid
-            last.
-        -   QUESTION: is this correct?
-    -   Subset: whether CD4 or CD8 T cells.
-    -   CD\[4/8\]+/2+ to CD\[4/8\]+/2-17-22-g-T-
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ*, ‘T’
-            to TNF and ‘22’ to IL-22. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
-
-#### H1:IC31
-
-There are two files associated with H1. They are detailed separately
-below. THe first, h1-group\_info.xlsx, was used to determine which study
-group each participant was allocated to, where the group determines the
-dose size and number of doses. The second, h1.xlsx, contains the immune
-response measurements.
-
--   File name
-    -   h1-group\_info.xlsx
--   Columns
-    -   SubjectID: participant identification number.
-    -   Group
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
--   File name
-    -   h1.xlsx
--   Columns
-    -   Sample: Sample label.
-    -   $FIL: Slightly shortened sample label.
-    -   SAMPLE ID: participant id number.
-    -   Group
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘2 denotes infected, and ’1’ uninfected.
-    -   Timepoint: days since first vaccination.
-    -   TUBE NAME: stimulation condition.
-    -   CD4+/G+T+2+17+ to CD8+/G-T-2-17-
-        -   Indicates CD4/CD8 cell subset and cytokines produced.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   G\[+/-\]T\[+/-\]2\[+/-\]17\[+/-\] indicates the cytokine
-            combination. ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to
-            IFN*γ* and ‘T’ to TNF. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
-
-#### H56:IC31
-
--   File name
-    -   h56.xlsx
--   Sheets
-    -   CD4 Freq and CD8 Freq
-    -   Frequencies for CD4 and CD8 T cells, respectively.
--   Columns
-    -   Group
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
-    -   LTBI
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘pos’ denotes infected, and ‘neg’ uninfected.
-    -   PTID: participant id number
-    -   Stimulation: stimulation condition.
-    -   Study Day: days since first vaccination.
-    -   Vaccine/Placebo
-        -   Whether or not a vaccine or placebo was given to the
-            participant.
-        -   ‘vaccine’ means that the participant was given a vaccine,
-            and ‘placebo’ that the participant was given a placebo.
-    -   Dose: dose size.
-    -   Regimen (#injections): number of vaccinations participant
-        received as part of study.
-    -   CD\[4/8\]+: NOOOOOOOOOOOOOOOOOT SUUUUUUUUUUUUUUUUUUUURE.
-    -   CD\[4/8\]+:CD\[4/8\]g-T-2-17-
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘+’ indicates that the preceding cytokine was
-            produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
-
-#### ID93+GLA-SE
-
--   File name
-    -   id93.xlsx
--   Columns
-    -   SAMPLE ID: participant identification number.
-    -   Date of Blod Draw: date of blood draw.
-    -   COHORT
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
-    -   Study Day: days since first vaccination.
-    -   RANDOMISATION
-        -   Whether or not a vaccine or placebo was given to the
-            participant.
-        -   ‘ID93+GLA/SE’ means that the participant was given a
-            vaccine, and ‘Placebo’ that the participant was given a
-            placebo.
-    -   QFT Status
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘QFT+’ denotes infected, and ‘QFT-’ uninfected.  
-    -   TUBE NAME: stimulation condition.
-    -   CD8+/G+T+2+17+ to CD4+/G-T-2-17+
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘+’ indicates that the preceding cytokine was
-            produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
-
-#### Megapool
-
--   File name
-    -   megapool.csv
--   Columns
-    -   Donor.ID: participant identification number.
-    -   SubjectType
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   All subjects have value ‘LTBI’ for this column, meaning that
-            their quantiferon score was greater than 0.35.
-        -   Stimulation: stimulation condition.
-    -   CD4.Gneg2negTpos…Count to CD8.Gpos2posTneg…Freq..of.Parent
-        -   Cell subset frequency of count.
-        -   CD\[4/8\] indicates whether the cells are CD4 or CD8 T
-            cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘pos’ indicates that the preceding cytokine
-            was produced, and a ‘neg’ that it was not.
--   Responses background subtracted?
-    -   No
-
-#### M72:AS01E and MVA85A
-
--   File name
-    -   main.xlsx
--   Columns
-    -   PatientID: patient identification number.
-    -   TubeName: stimulation condition.
-    -   Protocol ID: protocol identification number.
-    -   Vaccine: vaccine administered.
-    -   UniqueID: concatenation of PatientID, TubeName, Vaccine and
-        TimePoint.
-    -   Infxn
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘positive’ denotes infected, and ‘negative’ uninfected.  
-    -   TimePoint: time since first vaccination.
-    -   CD4posGpos2pos17posTpos to TotCD8posTpos
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]pos indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘pos’ indicates that the preceding cytokine
-            was produced, and a ‘neg’ that it was not.
--   Responses background subtracted?
-    -   Yes
-
-### Data processing schematic
