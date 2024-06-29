@@ -2087,3 +2087,11 @@ data_tidy_vacc_freq |>
     count = dplyr::n()
   )
 ```
+
+# Summed Responses
+
+```{r}
+summed_response <- data_tidy_vacc_freq |>
+  group_by(ptid,timepoint,subset) |>
+  summarize(total_response = sum(response))
+```
