@@ -2092,17 +2092,17 @@ data_tidy_vacc_freq |>
 
 ```{r}
 
-summed_response <- data_tidy_vacc_freq |>
+summed_response1 <- data_tidy_vacc_freq |>
   group_by(ptid,timepoint,subset) |>
   summarize(total_response = sum(response))
 ```
 
 ```{r}
 library(ggplot2)
-summed_response$timepoint <- as.factor(summed_response$timepoint)
 
+summed_response1$timepoint <- as.factor(summed_response1$timepoint)
 #plot
-ggplot(summed_response, aes(x = ptid, y = total_response, fill = timepoint)) +
+plot=ggplot(summed_response1, aes(x = ptid, y = total_response, fill = timepoint)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ subset) +
   labs(
@@ -2112,4 +2112,54 @@ ggplot(summed_response, aes(x = ptid, y = total_response, fill = timepoint)) +
   ) +
   theme_minimal()+
   scale_fill_discrete(name = "Timepoint")
+
+ggsave("plot1.png", plot = last_plot())
+```
+
+```{r}
+summed_response2 <- data_tidy_vacc_freq |>
+  group_by(ptid,timepoint,subset,vaccine,infxn) |>
+  summarize(total_response = sum(response))
+```
+
+```{r}
+summed_response2$timepoint <- as.factor(summed_response2$timepoint)
+
+#plot
+plot=ggplot(summed_response2, aes(x = ptid, y = total_response, fill = timepoint)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~subset+vaccine+infxn) +
+  labs(
+    title = "Summed Response",
+    x = "Ptid",
+    y = "Total Response"
+  ) +
+  theme_minimal()+
+  scale_fill_discrete(name = "Timepoint")
+
+ggsave("plot2.png", plot = last_plot())
+```
+
+```{r}
+summed_response3 <- data_tidy_vacc_freq |>
+  group_by(ptid,timepoint,subset,vaccine,infxn,sex) |>
+  summarize(total_response = sum(response))
+```
+
+```{r}
+summed_response3$timepoint <- as.factor(summed_response3$timepoint)
+
+#plot
+plot=ggplot(summed_response3, aes(x = ptid, y = total_response, fill = timepoint)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~subset+vaccine+infxn+sex) +
+  labs(
+    title = "Summed Response",
+    x = "Ptid",
+    y = "Total Response"
+  ) +
+  theme_minimal()+
+  scale_fill_discrete(name = "Timepoint")
+
+ggsave("plot3.png", plot = last_plot())
 ```
