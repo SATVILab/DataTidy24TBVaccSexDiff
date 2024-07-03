@@ -2095,3 +2095,4 @@ summed_response <- data_tidy_vacc_freq |>
   group_by(ptid,timepoint,subset) |>
   summarize(total_response = sum(response))
 ```
+
