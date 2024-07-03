@@ -2091,8 +2091,25 @@ data_tidy_vacc_freq |>
 # Summed Responses
 
 ```{r}
+
 summed_response <- data_tidy_vacc_freq |>
   group_by(ptid,timepoint,subset) |>
   summarize(total_response = sum(response))
 ```
 
+```{r}
+library(ggplot2)
+summed_response$timepoint <- as.factor(summed_response$timepoint)
+
+#plot
+ggplot(summed_response, aes(x = ptid, y = total_response, fill = timepoint)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ subset) +
+  labs(
+    title = "Summed Response",
+    x = "Ptid",
+    y = "Total Response"
+  ) +
+  theme_minimal()+
+  scale_fill_discrete(name = "Timepoint")
+```
