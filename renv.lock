@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.4.0",
+    "Version": "4.4.1",
     "Repositories": [
       {
         "Name": "RSPM",
@@ -330,14 +330,14 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.6.2",
+      "Version": "3.6.3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "1216ac65ac55ec0058a6f75d7ca0fd52"
+      "Hash": "b21916dd77a27642b447374a5d30ecf3"
     },
     "clipr": {
       "Package": "clipr",
@@ -543,14 +543,14 @@
     },
     "digest": {
       "Package": "digest",
-      "Version": "0.6.35",
+      "Version": "0.6.36",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "698ece7ba5a4fa4559e3d537e7ec3d31"
+      "Hash": "fd6824ad91ede64151e93af67df6376b"
     },
     "downlit": {
       "Package": "downlit",
@@ -1407,7 +1407,7 @@
     },
     "projr": {
       "Package": "projr",
-      "Version": "0.1.10-2",
+      "Version": "0.1.11-7",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
@@ -1415,7 +1415,7 @@
       "RemoteUsername": "SATVILab",
       "RemotePkgRef": "SATVILab/projr@HEAD",
       "RemoteRef": "HEAD",
-      "RemoteSha": "4abca3d9e4431b859cfff6e74bcf08c6e81592c6",
+      "RemoteSha": "e1bcd864a985a769686570f36213ce8e7879c128",
       "Requirements": [
         "desc",
         "digest",
@@ -1425,7 +1425,7 @@
         "rprojroot",
         "yaml"
       ],
-      "Hash": "ea3a032f962cb47231e7f5ac3ce36862"
+      "Hash": "ff4b2cbf7bbfea7fda504dcb125a65bc"
     },
     "promises": {
       "Package": "promises",
