@@ -2211,3 +2211,27 @@ plot5=ggplot(summed_response5, aes(x = timepoint, y = total_response)) +
 
 ggsave("plot5.png", plot = plot5)
 ```
+
+```{r}
+summed_response6 <- data_tidy_vacc_freq |>
+  group_by(vaccine,timepoint,subset,sex) |>
+  summarize(total_response = sum(response))
+```
+
+```{r}
+summed_response6$timepoint <- as.factor(summed_response6$timepoint)
+
+#plot
+plot=ggplot(summed_response6, aes(x = vaccine, y = total_response, fill = timepoint)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~sex) +
+  labs(
+    title = "Summed Response",
+    x = "Vaccine",
+    y = "Total Response"
+  ) +
+  theme_minimal()+
+  scale_fill_discrete(name = "Timepoint")
+
+ggsave("plot6.png", plot = last_plot())
+```
