@@ -2207,7 +2207,10 @@ plot5=ggplot(summed_response5, aes(x = timepoint, y = total_response)) +
     x = "Timepoint",
     y = "Total Response"
   ) +
-  theme_minimal()
+   theme_minimal()+ theme(
+  plot.background = element_rect(fill = "white"),
+  panel.background = element_rect(fill = "white")
+)
 
 ggsave("plot5.png", plot = plot5)
 ```
