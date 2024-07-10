@@ -2167,7 +2167,7 @@ ggsave("plot3.png", plot = last_plot())
 ```{r}
 
 summed_response4 <- data_tidy_vacc_freq |>
-  group_by(vaccine,timepoint,subset) |>
+  group_by(vaccine,timepoint,subset,ptid) |>
   summarize(total_response = sum(response))
 ```
 
@@ -2191,7 +2191,7 @@ ggsave("plot4.png", plot = last_plot())
 
 ```{r}
 summed_response5 <- data_tidy_vacc_freq |>
-  group_by(vaccine,timepoint,subset) |>
+  group_by(vaccine,timepoint,subset,ptid) |>
   summarize(total_response = sum(response))
 ```
 
