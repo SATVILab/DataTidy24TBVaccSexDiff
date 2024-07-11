@@ -2016,10 +2016,6 @@ data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
   ) |>
   dplyr::select(-cohort) |>
   dplyr::select(vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response)
-# write a loop from 1 to 10 and print out every number squared
-for (i in 1:10) {
-  print(i^2)
-}
 ```
 
 Let's get out table of pids for Humphrey:
