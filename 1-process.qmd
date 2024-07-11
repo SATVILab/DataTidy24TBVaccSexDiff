@@ -1105,11 +1105,93 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
 This is for protocol `C-035-456`.
 
 ```{r}
-h56_tbl_raw <- readxl::read_xlsx(
+h56_tbl_raw_cd4 <- readxl::read_xlsx(
   projr::projr_path_get(
     "data-raw-private", "161115_All H56-035 data.xlsx"
-  )
+  ),
+  sheet = "CD4 Counts"
 )
+# to merge, we need to get the:
+# - denominator count (CD4+) for each cytokine combination
+# - numerator counts (only the cytokine combinations)
+grp_vec_h56 <- c(
+  "Group", "LTBI", "PTID", "Stimulation", "Study Day", "Vaccine/Placebo",
+  "Dose", "Regimen (#injections)"
+)
+h56_tbl_pre_merge_cd4 <- h56_tbl_raw_cd4 |>
+  tidyr::pivot_longer(
+    -c(Group:`Regimen (#injections)`),
+    names_to = "type",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    subset = "cd4"
+  ) |>
+  dplyr::group_by(dplyr::across(grp_vec_h56)) |>
+  dplyr::mutate(
+    count_denom = response[type == "CD4+"]
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::filter(
+    grepl("^g", type)
+  ) |>
+  dplyr::mutate(
+    response = response / count_denom * 1e2
+  ) |>
+  dplyr::select(-count_denom)
+h56_tbl_raw_cd8 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "161115_All H56-035 data.xlsx"
+  ),
+  sheet = "CD8 Counts"
+)
+h56_tbl_pre_merge_cd8 <- h56_tbl_raw_cd8 |>
+  tidyr::pivot_longer(
+    -c(Group:`Regimen (#injections)`),
+    names_to = "type",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    subset = "cd8"
+  ) |>
+  dplyr::group_by(dplyr::across(grp_vec_h56)) |>
+  dplyr::mutate(
+    count_denom = response[type == "CD8+"]
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::filter(
+    grepl("^g", type)
+  ) |>
+  dplyr::mutate(
+    response = response / count_denom * 1e2
+  ) |>
+  )
+data_tidy_h56 <- data_tidy_h56 |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset"),
+    cmbn = "cyt_combn",
+    markers_to_sum = c("17"),
+    resp = "response"
+  ) 
+```
+
+There are no entries with missing sex data:
+
+```{r}
+data_tidy_h56 |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_h56)
+```
+  dplyr::select(-count_denom)
+h56_tbl_cd48 <- h56_tbl_pre_merge_cd4 |>
+  dplyr::bind_rows(
+    h56_tbl_pre_merge_cd8
+  ) |>
+  dplyr::select(Group:`Regimen (#injections)`, subset, type, response, everything()) |>
+  dplyr::rename(cyt_combn = type)
 ```
 
 Okay, the grouping information is a bit complicated. Overall, we want:
@@ -1125,7 +1207,7 @@ So, that is:
 Here we go:
 
 ```{r}
-h56_tbl_uninf <- h56_tbl_raw |>
+h56_tbl_uninf <- h56_tbl_cd48 |>
   dplyr::filter(
     Group == 1, Dose == 5, `Vaccine/Placebo` == "vaccine"
   )
@@ -1140,7 +1222,7 @@ h56_tbl_uninf_pid
 ```
 
 ```{r}
-h56_tbl_inf <- h56_tbl_raw |>
+h56_tbl_inf <- h56_tbl_cd48 |>
   dplyr::filter(
     Group == 3, `Vaccine/Placebo` == "vaccine"
   )
@@ -1164,12 +1246,8 @@ data_tidy_sex_c035_456$ptid |> unique()
 ```
 
 ```{r}
-h56_tbl$PTID |> unique()
-```
-
-```{r}
 # h56_tbl_non_sex_merge <-
-h56_tbl_raw_wide <- h56_tbl_raw |>
+h56_tbl_raw_wide <- h56_tbl_cd48 |>
   dplyr::rename(ptid = PTID) |>
   dplyr::mutate(ptid = tolower(ptid)) |>
   dplyr::select(-Group) |>
@@ -1199,31 +1277,14 @@ h56_tbl_raw_wide <- h56_tbl_raw |>
   ) |>
   dplyr::select(
     -`Vaccine/Placebo`
-  ) |>
-  dplyr::mutate(
-    subset = "cd4"
   )
 h56_tbl_tmp <- h56_tbl_raw_wide |>
-  dplyr::select(
-    -c(Dose, `Regimen (#injections)`)
-  ) |>
-  dplyr::mutate(
-    across(starts_with("g"), ~ . / `CD4+` * 1e2)
-  ) |>
-  dplyr::select(-starts_with("CD4+")) |>
-  dplyr::select(-`g-T-2-17-`) |>
-  tidyr::pivot_longer(
-    `g+T+2+17+`:`g-T-2-17+`,
-    names_to = "cyt_combn",
-    values_to = "response"
-  )
-h56_tbl_tmp <- h56_tbl_tmp |>
   dplyr::mutate(
     cyt_combn = tolower(cyt_combn),
     cyt_combn = .cyt_combn_reorder(
       cyt_combn, c("g", "2", "t", "17")
-    )#,
-    #cyt_combn = names(cyt_combn)
+    ) # ,
+    # cyt_combn = names(cyt_combn)
   ) |>
   dplyr::group_by(
     ptid, infxn, timepoint, subset, cyt_combn
@@ -1266,26 +1327,6 @@ data_tidy_h56 <- h56_tbl_non_sex_merge |>
   ) |>
   dplyr::select(
     vaccine, prid, everything()
-  )
-data_tidy_h56 <- data_tidy_h56 |>
-  UtilsCytoRSV::sum_over_markers(
-    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset"),
-    cmbn = "cyt_combn",
-    markers_to_sum = c("17"),
-    resp = "response"
-  ) 
-```
-
-There are no entries with missing sex data:
-
-```{r}
-data_tidy_h56 |>
-  dplyr::filter(!sex %in% c("male", "female"))
-```
-
-```{r}
-UtilsDataRSV::view_cols(data_tidy_h56)
-```
 
 ```{r}
 set.seed(21)
