@@ -1127,7 +1127,7 @@ Here we go:
 ```{r}
 h56_tbl_uninf <- h56_tbl_raw |>
   dplyr::filter(
-    Group == 1, Dose == 5
+    Group == 1, Dose == 5, `Vaccine/Placebo` == "vaccine"
   )
 h56_tbl_uninf_pid <- h56_tbl_uninf |>
   dplyr::group_by(PTID) |>
