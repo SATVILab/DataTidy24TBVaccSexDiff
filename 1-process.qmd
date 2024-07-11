@@ -1638,7 +1638,7 @@ data_tidy_h1_unanon_calc <- data_tidy_h1_unanon |>
     .groups = "drop"
   ) |>
   dplyr::mutate(
-    response = response_stim - response_uns
+    response = response_stim - 2 * response_uns
   ) |>
   dplyr::select(
     -c(response_stim, response_uns)
