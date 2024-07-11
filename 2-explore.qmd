@@ -52,13 +52,18 @@ That would leave us with bcg uninfected and h1 uninfected and infected only, how
 
 # Summed Responses
 
-## Longitudinal
-
 ```{r}
+# calculate summed response
 data_tidy_vacc_summed <- data_tidy_vacc_freq |>
   dplyr::group_by(vaccine, timepoint, infxn, ptid, subset) |>
   dplyr::summarize(total_response = sum(response), .groups = "drop")
 ```
+
+## Raw
+
+Here we use the as-is responses, i.e. without subtracting day zero.
+
+### Longitudinal
 
 ```{r}
 plot_tbl <- data_tidy_vacc_summed |>
@@ -95,9 +100,11 @@ p_summed_long <- cowplot::plot_grid(
 ) |>
   plot_bw_set_white()
 
+# save as an output
 path_plot_summed_longitudinal <- projr::projr_path_get(
-  "cache", "fig", "exp", "p-summed-longitudinal.png"
+  "output-private", "fig", "exp", "p-summed-raw-longitudinal.png"
 )
+
 ggsave(
   path_plot_summed_longitudinal,
   plot = p_summed_long,
@@ -110,4 +117,89 @@ ggsave(
 knitr::include_graphics(path_plot_summed_longitudinal)
 ```
 
-## Baseline 
+### Baseline 
+
+## Vaccine-induced
+
+Here we subtracted the day-zero response.
+If, for a given participant, there is no day zero response, then we subtract the median day zero response.
+
+```{r}
+for (x in list.files("R", full.names = TRUE)) {
+  source(x)
+}
+# debugonce(calc_vaccine_induced_response)
+data_tidy_vacc_summed_vi <- data_tidy_vacc_summed |>
+  calc_vaccine_induced_response(cn_resp = "total_response")
+```
+
+Let's view the data to check it looks okay:
+
+Let's check that all day 0 values are zero:
+```{r}
+data_tidy_vacc_summed_vi |>
+  dplyr::filter(timepoint == 0) |>
+  dplyr::pull(total_response) |>
+  unique()
+```
+
+Let's check that there are no NAs:
+
+```{r}
+data_tidy_vacc_summed_vi |>
+  dplyr::filter(is.na(total_response))
+```
+
+### Longitudinal
+
+```{r}
+plot_tbl <- data_tidy_vacc_summed_vi |>
+  dplyr::group_by(
+    vaccine, timepoint, infxn
+  ) |>
+  dplyr::summarise(
+    med = median(total_response),
+    lb = quantile(total_response, 0.25),
+    ub = quantile(total_response, 0.75),
+    .groups = "drop"
+  )
+
+plot_tbl_uninf <- plot_tbl |> dplyr::filter(infxn == "uninfected")
+plot_tbl_uninf <- plot_tbl_uninf |>
+  dplyr::mutate(
+    vaccine = factor(plot_tbl_uninf$vaccine, levels = c("h1", "h56", "mva85a", "bcg"))
+  )
+plot_tbl_inf <- plot_tbl |> dplyr::filter(infxn == "infected")
+plot_tbl_inf <- plot_tbl_inf |>
+  dplyr::mutate(
+    vaccine = factor(plot_tbl_inf$vaccine, levels = c("h1", "h56", "mva85a"))
+  )
+# do separate plots for uninfected and infected
+# as responses are on different scales
+p_summed_long_uninf <- plot_summed_longitudinal(plot_tbl_uninf, "Uninfected")
+p_summed_long_inf <- plot_summed_longitudinal(plot_tbl_inf, "Infected")
+
+# combine plots
+p_summed_long <- cowplot::plot_grid(
+  p_summed_long_uninf,
+  p_summed_long_inf,#,
+  nrow = 2
+) |>
+  plot_bw_set_white()
+
+# save as an output
+path_plot_summed_longitudinal <- projr::projr_path_get(
+  "output-private", "fig", "exp", "p-summed-induced-longitudinal.png"
+)
+
+ggsave(
+  path_plot_summed_longitudinal,
+  plot = p_summed_long,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_plot_summed_longitudinal)
+```
