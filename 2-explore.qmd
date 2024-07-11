@@ -1,0 +1,113 @@
+---
+title: Explore data
+author: "Miguel Rodo"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| include: false
+library(tibble)
+library(ggplot2)
+library(dplyr)
+for (x in list.files("R", full.names = TRUE)) {
+  source(x)
+}
+```
+
+# Load data
+
+Here we load the processed data:
+
+```{r}
+# this function is defined in R/load.R
+# (and sourced in the initial chunk above)
+path_data_tidy_vacc_freq <- path_get_data_tidy_vacc_freq()
+load(path_data_tidy_vacc_freq)
+```
+
+```{r}
+data_tidy_vacc_freq
+```
+
+# Sample sizes
+
+```{r}
+#| results: asis
+data_tidy_vacc_freq |>
+  dplyr::group_by(ptid) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(vaccine, prid, infxn, sex) |>
+  dplyr::summarise(count = dplyr::n()) |>
+  dplyr::arrange(vaccine, prid, infxn, sex) |>
+  knitr::kable()
+```
+
+We have very few males for infected h56 (3), uninfected h56 (5) and uninfected mva85a (3) and very few females for infected mva85a (2).
+
+This may reduce our power when looking for an overall effect, and so we should perhaps exclude these from the comparison.
+That would leave us with bcg uninfected and h1 uninfected and infected only, however.
+
+# Summed Responses
+
+## Longitudinal
+
+```{r}
+data_tidy_vacc_summed <- data_tidy_vacc_freq |>
+  dplyr::group_by(vaccine, timepoint, infxn, ptid, subset) |>
+  dplyr::summarize(total_response = sum(response), .groups = "drop")
+```
+
+```{r}
+plot_tbl <- data_tidy_vacc_summed |>
+  dplyr::group_by(
+    vaccine, timepoint, infxn
+  ) |>
+  dplyr::summarise(
+    med = median(total_response),
+    lb = quantile(total_response, 0.25),
+    ub = quantile(total_response, 0.75),
+    .groups = "drop"
+  )
+
+plot_tbl_uninf <- plot_tbl |> dplyr::filter(infxn == "uninfected")
+plot_tbl_uninf <- plot_tbl_uninf |>
+  dplyr::mutate(
+    vaccine = factor(plot_tbl_uninf$vaccine, levels = c("h1", "h56", "mva85a", "bcg"))
+  )
+plot_tbl_inf <- plot_tbl |> dplyr::filter(infxn == "infected")
+plot_tbl_inf <- plot_tbl_inf |>
+  dplyr::mutate(
+    vaccine = factor(plot_tbl_inf$vaccine, levels = c("h1", "h56", "mva85a"))
+  )
+# do separate plots for uninfected and infected
+# as responses are on different scales
+p_summed_long_uninf <- plot_summed_longitudinal(plot_tbl_uninf, "Uninfected")
+p_summed_long_inf <- plot_summed_longitudinal(plot_tbl_inf, "Infected")
+
+# combine plots
+p_summed_long <- cowplot::plot_grid(
+  p_summed_long_uninf,
+  p_summed_long_inf,#,
+  nrow = 2
+) |>
+  plot_bw_set_white()
+
+path_plot_summed_longitudinal <- projr::projr_path_get(
+  "cache", "fig", "exp", "p-summed-longitudinal.png"
+)
+ggsave(
+  path_plot_summed_longitudinal,
+  plot = p_summed_long,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_plot_summed_longitudinal)
+```
+
+## Baseline 

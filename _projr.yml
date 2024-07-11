@@ -13,6 +13,7 @@ directories:
     path: _output/public
   docs:
     path: _site
+NA: ~
 build:
   github:
     latest:

@@ -1136,7 +1136,9 @@ h56_tbl_uninf_pid <- h56_tbl_uninf |>
   dplyr::group_by(PTID) |>
   dplyr::slice(1) |>
   dplyr::select(PTID) |>
-  dplyr::ungroup()
+  dplyr::ungroup() |>
+  dplyr::mutate(PTID = tolower(PTID)) |>
+  dplyr::rename(ptid = PTID)
 h56_tbl_uninf_pid
 ```
 
@@ -1149,7 +1151,9 @@ h56_tbl_inf_pid <- h56_tbl_inf |>
   dplyr::group_by(PTID) |>
   dplyr::slice(1) |>
   dplyr::select(PTID) |>
-  dplyr::ungroup()
+  dplyr::ungroup() |>
+  dplyr::mutate(PTID = tolower(PTID)) |>
+  dplyr::rename(ptid = PTID) 
 h56_tbl_inf_pid
 ```
 
@@ -1252,39 +1256,16 @@ h56_tbl_non_sex_merge <- h56_tbl_tmp |>
     ptid, infxn, timepoint, stim, subset, cyt_combn, response, everything()
   ) |>
   dplyr::select(-stim)
-ptid_vec_immune <- unique(h56_tbl_non_sex_merge$ptid)
-ptid_vec_sex <- unique(
-      data_tidy_sex_c035_456 |>
-      dplyr::mutate(ptid = tolower(ptid)) |>
-      dplyr::pull(ptid)
-)
-ptid_vec_immune
-ptid_vec_sex
-ptid_vec_main <- unique(h56_tbl_pid$ptid) |> tolower()
-ptid_vec_main <- paste0(
-  "id_0", unique(h56_tbl_pid$ptid) |> tolower()
-)
-ptid_vec_main %in% ptid_vec_immune
-sum(ptid_vec_immune %in% ptid_vec_sex)
+
 data_tidy_h56 <- h56_tbl_non_sex_merge |>
-  dplyr::left_join(
+  dplyr::right_join(
     data_tidy_sex_c035_456 |>
-      dplyr::mutate(ptid = tolower(ptid)) |>
+      # dplyr::mutate(ptid = tolower(ptid)) |>
       dplyr::select(ptid, sex),
     by = "ptid"
   ) |>
   dplyr::mutate(
-    ptid = gsub("^id_", "", ptid) |>
-      as.numeric()
-  ) |>
-  dplyr::filter(
-    ptid %in% tolower(
-      h56_tbl_pid$ptid
-    )
-  ) |>
-  dplyr::mutate(
-    vaccine = "h56",
-    prid = "c-035-456"
+    vaccine = "h56", prid = "c-035-456"
   ) |>
   dplyr::select(
     vaccine, prid, everything()
@@ -2034,6 +2015,10 @@ data_tidy_mtbvac_050 <- data_tidy_mtbvac_050 |>
   ) |>
   dplyr::select(-cohort) |>
   dplyr::select(vaccine, prid, ptid, infxn, timepoint, subset, cyt_combn, response)
+# write a loop from 1 to 10 and print out every number squared
+for (i in 1:10) {
+  print(i^2)
+}
 ```
 
 Let's get out table of pids for Humphrey:
@@ -2088,164 +2073,3 @@ data_tidy_vacc_freq |>
   )
 ```
 
-# Summed Responses
-
-```{r}
-
-summed_response1 <- data_tidy_vacc_freq |>
-  group_by(ptid,timepoint,subset) |>
-  summarize(total_response = sum(response))
-```
-
-```{r}
-library(ggplot2)
-
-summed_response1$timepoint <- as.factor(summed_response1$timepoint)
-#plot
-plot=ggplot(summed_response1, aes(x = ptid, y = total_response, fill = timepoint)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~ subset) +
-  labs(
-    title = "Summed Response",
-    x = "Ptid",
-    y = "Total Response"
-  ) +
-  theme_minimal()+
-  scale_fill_discrete(name = "Timepoint")
-
-ggsave("plot1.png", plot = last_plot())
-```
-
-```{r}
-summed_response2 <- data_tidy_vacc_freq |>
-  group_by(ptid,timepoint,subset,vaccine,infxn) |>
-  summarize(total_response = sum(response))
-```
-
-```{r}
-summed_response2$timepoint <- as.factor(summed_response2$timepoint)
-
-#plot
-plot=ggplot(summed_response2, aes(x = ptid, y = total_response, fill = timepoint)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~subset+vaccine+infxn) +
-  labs(
-    title = "Summed Response",
-    x = "Ptid",
-    y = "Total Response"
-  ) +
-  theme_minimal()+
-  scale_fill_discrete(name = "Timepoint")
-
-ggsave("plot2.png", plot = last_plot())
-```
-
-```{r}
-summed_response3 <- data_tidy_vacc_freq |>
-  group_by(ptid,timepoint,subset,vaccine,infxn,sex) |>
-  summarize(total_response = sum(response))
-```
-
-```{r}
-summed_response3$timepoint <- as.factor(summed_response3$timepoint)
-
-#plot
-plot=ggplot(summed_response3, aes(x = ptid, y = total_response, fill = timepoint)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~subset+vaccine+infxn+sex) +
-  labs(
-    title = "Summed Response",
-    x = "Ptid",
-    y = "Total Response"
-  ) +
-  theme_minimal()+
-  scale_fill_discrete(name = "Timepoint")
-
-ggsave("plot3.png", plot = last_plot())
-```
-
-```{r}
-
-summed_response4 <- data_tidy_vacc_freq |>
-  group_by(vaccine,timepoint,ptid,subset) |>
-  summarize(total_response = sum(response))
-```
-
-```{r}
-summed_response4$timepoint <- as.factor(summed_response4$timepoint)
-
-#plot
-plot=ggplot(summed_response4, aes(x = vaccine, y = total_response, fill = timepoint)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~subset) +
-  labs(
-    title = "Summed Response",
-    x = "Vaccine",
-    y = "Total Response"
-  ) +
-  theme_minimal()+
-  scale_fill_discrete(name = "Timepoint")
-
-ggsave("plot4.png", plot = last_plot())
-```
-
-```{r}
-summed_response5 <- data_tidy_vacc_freq |>
-  group_by(vaccine, timepoint, ptid, subset) |>
-  summarize(total_response = sum(response), .groups = "drop")
-```
-
-```{r}
-summed_response5$timepoint <- as.factor(summed_response5$timepoint)
-
-plot_tbl <- summed_response5 |>
-  dplyr::group_by(
-    vaccine, timepoint, ptid
-  ) |>
-  dplyr::mutate(
-    med = median(total_response),
-    lb = quantile(total_response, 0.25),
-    ub = quantile(total_response, 0.75)
-  )
-
-# plot
-plot5 <- ggplot(plot_tbl, aes(x = timepoint)) +
-  geom_point(aes(y = med)) +
-  geom_errorbar(aes(ymin = lb, ymax = ub), width = 0.2) +
-  facet_wrap(~ subset + vaccine) +
-  labs(
-    title = "Summed Response",
-    x = "Timepoint",
-    y = "Total Response"
-  ) +
-   theme_minimal()+ theme(
-  plot.background = element_rect(fill = "white"),
-  panel.background = element_rect(fill = "white")
-)
-
-ggsave("plot5.png", plot = plot5)
-```
-
-```{r}
-summed_response6 <- data_tidy_vacc_freq |>
-  group_by(vaccine,timepoint,subset,sex) |>
-  summarize(total_response = sum(response))
-```
-
-```{r}
-summed_response6$timepoint <- as.factor(summed_response6$timepoint)
-
-#plot
-plot=ggplot(summed_response6, aes(x = vaccine, y = total_response, fill = timepoint)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~sex) +
-  labs(
-    title = "Summed Response",
-    x = "Vaccine",
-    y = "Total Response"
-  ) +
-  theme_minimal()+
-  scale_fill_discrete(name = "Timepoint")
-
-ggsave("plot6.png", plot = last_plot())
-```
