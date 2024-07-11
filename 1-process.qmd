@@ -16,8 +16,6 @@ for (x in list.files("R", full.names = TRUE)) {
 
 # Sex data
 
-
-
 Here is the spreadsheet with the sex data:
 
 ## C035_456
@@ -395,8 +393,6 @@ data_tidy_sex_id93 |>
     screen_id %in% screen_id_vec_cohort_3
   )
 ```
-
-
 
 Only ten match, however:
 
@@ -1245,7 +1241,7 @@ h56_tbl_non_sex_merge <- h56_tbl_tmp |>
     .groups = "drop"
   ) |>
   dplyr::mutate(
-    response = response_stim - response_uns
+    response = response_stim - 3 * response_uns
   ) |>
   dplyr::mutate(
     stim = "esat6 + ag85b + rv2660"
