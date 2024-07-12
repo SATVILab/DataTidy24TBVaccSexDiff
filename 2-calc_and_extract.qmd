@@ -1,0 +1,118 @@
+---
+title: Run calculation and extraction functions
+author: "Miguel Rodo"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| include: false
+library(tibble)
+library(ggplot2)
+library(dplyr)
+for (x in list.files("R", full.names = TRUE)) {
+  source(x)
+}
+```
+
+
+## Calculation
+
+Here we load the processed data:
+
+```{r}
+# this function is defined in R/load.R
+# (and sourced in the initial chunk above)
+path_data_tidy_vacc_freq <- path_get_data_tidy_vacc_freq()
+load(path_data_tidy_vacc_freq)
+```
+
+```{r}
+data_tidy_vacc_freq
+```
+
+### Vaccine-induced response
+
+To calculate the vaccine-induced response, we subtract the baseline response.
+If the baseline response is missing for a particular individual, we subtract the 
+median baseline response for that individual's vaccine and infection status group.
+
+```{r}
+data_tidy_vacc_raw <- data_tidy_vacc_freq
+data_tidy_vacc_vi <- data_tidy_vacc_freq |>
+  vacc_calc_vaccine_induced_response(cn_resp = "response")
+data_tidy_vacc_vi
+```
+
+### Summed response
+
+To calculate the summed response, we sum over the responses
+for a given individual at a given timepoint.
+The `vacc_calc_response_summed` function performs this:
+
+```{r}
+data_tidy_vacc_raw_summed <- data_tidy_vacc_raw |>
+  vacc_calc_response_summed(cn_resp = "response")
+data_tidy_vacc_vi_summed <- data_tidy_vacc_vi |>
+  vacc_calc_response_summed(cn_resp = "response")
+data_tidy_vacc_vi_summed
+```
+
+### Profile response
+
+To calculate the profile response, we divide the response
+(ito a given cytokine combination) for a given
+individual at a given timepoint by the sum of the
+absolute values of their responses at that timepoint.
+The `vacc_calc_response_profile` function performs this:
+
+```{r}
+data_tidy_vacc_raw_profile <- data_tidy_vacc_freq |>
+  vacc_calc_response_profile(cn_resp = "response")
+data_tidy_vacc_vi_profile <- data_tidy_vacc_vi |>
+  vacc_calc_response_profile(cn_resp = "response")
+data_tidy_vacc_vi_profile
+```
+
+## Subset
+
+The functions `vacc_extract_baseline`, `vacc_extract_peak`, and `vacc_extract_memory`
+extract the baseline, peak, and memory responses, respectively.
+
+The baseline response is the response at day 0.
+The peak response is the maximum response across all timepoints (consistent across individuals within a vaccine).
+The memory response is the response at the last timepoint.
+
+### Baseline
+
+```{r}
+data_tidy_vacc_raw_summed_baseline <- data_tidy_vacc_raw_summed |>
+  vacc_extract_baseline()
+data_tidy_vacc_raw_summed_baseline
+data_tidy_vacc_raw_profile_baseline <- data_tidy_vacc_raw_profile |>
+  vacc_extract_baseline()
+data_tidy_vacc_raw_profile
+```
+
+### Peak
+
+```{r}
+data_tidy_vacc_raw_summed_peak <- data_tidy_vacc_raw_summed |>
+  vacc_extract_peak()
+data_tidy_vacc_raw_summed_peak
+data_tidy_vacc_raw_profile_peak <- data_tidy_vacc_raw_profile |>
+  vacc_extract_peak()
+data_tidy_vacc_raw_profile_peak
+```
+
+#### Memory
+
+```{r}
+data_tidy_vacc_raw_summed_mem <- data_tidy_vacc_raw_summed |>
+  vacc_extract_memory()
+data_tidy_vacc_raw_summed_mem
+data_tidy_vacc_raw_profile_mem <- data_tidy_vacc_raw_profile |>
+  vacc_extract_memory()
+data_tidy_vacc_raw_profile_mem
+```

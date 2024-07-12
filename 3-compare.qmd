@@ -1,0 +1,452 @@
+---
+title: Compare to Rodo (2019)
+author: "Miguel Rodo"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+#| include: false
+library(tibble)
+library(ggplot2)
+library(dplyr)
+for (x in list.files("R", full.names = TRUE)) {
+  source(x)
+}
+```
+
+# Introduction
+
+We want to create figures to compare the current responses to those of Rodo (2019).
+
+## Prepare data
+
+### Sex study
+
+Here we load the processed data:
+
+```{r}
+# this function is defined in R/load.R
+# (and sourced in the initial chunk above)
+path_data_tidy_vacc_freq <- path_get_data_tidy_vacc_freq()
+load(path_data_tidy_vacc_freq)
+```
+
+```{r}
+data_tidy_vacc_freq
+```
+
+### Rodo (2019)
+
+```{r}
+data("join17ExcTbl", package = "DataTidy19RodoVaccComp")
+data_tidy_old <- join17ExcTbl
+vacc_lab_old <- c(
+  "1" = "aeras402",
+  "2" = "h56",
+  "3" = "m72",
+  "4" = "mva85a",
+  "5" = "h1",
+  "6" = "id93",
+  "7" = "bcg",
+  "8" = "megapool"
+)
+prid_lab_old <- c(
+  "1" = "003",
+  "2" = "c-035-456", # h56
+  "3" = "tb010",
+  "4" = "tb012",
+  "5" = "tb008", # mva85a
+  "6" = "tb011", # mva85a
+  "7" = "thyb04", # h1
+  "8" = "tbru",
+  "9" = "idri114",
+  "10" = "megapool"
+)
+
+data_tidy_old <- data_tidy_old |>
+  dplyr::mutate(
+    vaccine = vacc_lab_old[vaccine],
+    prid = prid_lab_old[prid],
+    subset = ifelse(grepl("^CD4", cytCombo), "cd4", "cd8"),
+    infxn = ifelse(infxn == "0", "uninfected", "infected")
+  ) |>
+  dplyr::inner_join(
+    data_tidy_vacc_freq |>
+      dplyr::select(vaccine, infxn) |>
+      dplyr::group_by(vaccine, infxn) |>
+      dplyr::slice(1) |>
+      dplyr::ungroup(),
+    by = c("vaccine", "infxn")
+  ) |>
+  dplyr::rename(
+    timepoint = timePoint,
+    response = resp,
+    cyt_combn = cytCombo
+  )
+data_tidy_old |>
+  dplyr::group_by(vaccine, prid, infxn, ptid) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(vaccine, prid, infxn) |>
+  dplyr::summarise(count = dplyr::n())
+data_tidy_old |>
+  dplyr::group_by(vaccine, prid, infxn, timepoint) |>
+  dplyr::select(vaccine, prid, infxn, timepoint) |>
+  dplyr::slice(1) |>
+  print(n = Inf)
+```
+
+```{r}
+data_tidy_new <- data_tidy_vacc_freq |>
+  dplyr::inner_join(
+    data_tidy_old |>
+      dplyr::select(vaccine, prid, infxn) |>
+      dplyr::group_by(vaccine, prid, infxn) |>
+      dplyr::slice(1) |>
+      dplyr::ungroup(),
+    by = c("vaccine", "prid", "infxn")
+  )
+data_tidy_new |>
+  dplyr::group_by(vaccine, prid, infxn) |>
+  dplyr::slice(1) |>
+  dplyr::select(vaccine, prid, infxn) |>
+  print(n = Inf)
+```
+
+```{r}
+data_tidy_comp <- data_tidy_new |>
+  dplyr::mutate(type = "new") |>
+  dplyr::bind_rows(
+    data_tidy_old |>
+      dplyr::mutate(type = "old")
+  ) |>
+  dplyr::mutate(
+      infxn = factor(.data[["infxn"]], levels = c("uninfected", "infected"))
+  ) |>
+  dplyr::mutate(
+    type = factor(.data[["type"]], levels = c("old", "new"))
+  ) |>
+  dplyr::rename(resp = response)
+```
+
+## Compare
+
+### Summed response
+
+```{r}
+data_tidy_comp_summed <- data_tidy_comp |>
+  vacc_calc_response_summed(cn_resp = "resp") |>
+  vacc_set_neg_to_zero(cn_resp = "resp")
+```
+
+#### Baseline
+
+```{r}
+data_tidy_comp_summed_bl <- data_tidy_comp_summed |>
+  vacc_extract_baseline() |>
+  dplyr::filter(subset == "cd4")
+```
+
+##### Both uninfected and infected
+
+```{r}
+p_comp_summed_d0 <- ggplot(
+  data_tidy_comp_summed_bl,
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at day zero",
+    x = "Vaccine"
+  )
+p_comp_summed_d0 <- p_comp_summed_d0  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-baseline.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_d0,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```
+
+##### Uninfected only
+
+```{r}
+p_comp_summed_d0 <- ggplot(
+  data_tidy_comp_summed_bl |>
+    dplyr::filter(
+      infxn == "uninfected"
+    ) |>
+    dplyr::mutate(
+      vaccine = vacc_lab_tidy[vaccine]
+    ),
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at day zero",
+    x = "Vaccine"
+  ) +
+  coord_cartesian(y = c(0, 0.12))
+p_comp_summed_d0 <- p_comp_summed_d0  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-baseline-uninfected_only.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_d0,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```
+
+#### Peak
+
+```{r}
+data_tidy_comp_summed_peak <- data_tidy_comp_summed |>
+  vacc_extract_peak() |>
+  dplyr::filter(subset == "cd4")
+```
+
+##### Both uninfected and infected
+
+```{r}
+p_comp_summed_peak <- ggplot(
+  data_tidy_comp_summed_peak,
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at peak timepoint",
+    x = "Vaccine"
+  )
+p_comp_summed_peak <- p_comp_summed_peak  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-peak.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_peak,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```
+
+##### Uninfected only
+
+```{r}
+p_comp_summed_peak <- ggplot(
+  data_tidy_comp_summed_peak |>
+    dplyr::filter(
+      infxn == "uninfected"
+    ) |>
+    dplyr::mutate(
+      vaccine = vacc_lab_tidy[vaccine]
+    ),
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at day zero",
+    x = "Vaccine"
+  ) +
+  coord_cartesian(y = c(0, 0.55))
+p_comp_summed_peak <- p_comp_summed_peak  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-peak-uninfected_only.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_peak,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```
+
+#### Memory
+
+```{r}
+data_tidy_comp_summed_memory <- data_tidy_comp_summed |>
+  vacc_extract_memory() |>
+  dplyr::filter(subset == "cd4")
+```
+
+##### Both uninfected and infected
+
+```{r}
+p_comp_summed_memory <- ggplot(
+  data_tidy_comp_summed_memory,
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at memory timepoint",
+    x = "Vaccine"
+  )
+p_comp_summed_memory <- p_comp_summed_memory  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-memory.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_memory,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```
+
+##### Uninfected only
+
+```{r}
+p_comp_summed_memory <- ggplot(
+  data_tidy_comp_summed_memory |>
+    dplyr::filter(
+      infxn == "uninfected"
+    ) |>
+    dplyr::mutate(
+      vaccine = vacc_lab_tidy[vaccine]
+    ),
+  aes(x = vaccine, y = resp)
+  ) +
+  geom_boxplot(aes(fill = type), position = "dodge") +
+  facet_wrap(
+    ~infxn,
+    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
+  ) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y", minor = "y") +
+  theme( # nolint
+    strip.background = element_rect(fill = "white", colour = "black") # nolint
+  ) +
+  scale_fill_manual(
+    values = c("old" = "dodgerblue", "new" = "orange"),
+    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(
+    y = "Summed CD4 response at day zero",
+    x = "Vaccine"
+  ) +
+  coord_cartesian(y = c(0, 0.55))
+p_comp_summed_memory <- p_comp_summed_memory  |> plot_bw_set_white()
+  
+path_p <- projr::projr_path_get(
+  "output-private", "fig", "compare", "p-comparison-summed-memory-uninfected_only.png"
+)
+ggsave(
+  path_p,
+  plot = p_comp_summed_memory,
+  height = 10, width = 17, units = "cm"
+)
+```
+
+
+```{r}
+#| results: asis
+knitr::include_graphics(path_p)
+```

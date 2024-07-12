@@ -1165,27 +1165,8 @@ h56_tbl_pre_merge_cd8 <- h56_tbl_raw_cd8 |>
   dplyr::mutate(
     response = response / count_denom * 1e2
   ) |>
-  )
-data_tidy_h56 <- data_tidy_h56 |>
-  UtilsCytoRSV::sum_over_markers(
-    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset"),
-    cmbn = "cyt_combn",
-    markers_to_sum = c("17"),
-    resp = "response"
-  ) 
-```
-
-There are no entries with missing sex data:
-
-```{r}
-data_tidy_h56 |>
-  dplyr::filter(!sex %in% c("male", "female"))
-```
-
-```{r}
-UtilsDataRSV::view_cols(data_tidy_h56)
-```
   dplyr::select(-count_denom)
+
 h56_tbl_cd48 <- h56_tbl_pre_merge_cd4 |>
   dplyr::bind_rows(
     h56_tbl_pre_merge_cd8
@@ -1327,6 +1308,42 @@ data_tidy_h56 <- h56_tbl_non_sex_merge |>
   ) |>
   dplyr::select(
     vaccine, prid, everything()
+  )
+data_tidy_h56 <- data_tidy_h56 |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c("ptid", "prid", "vaccine", "sex", "infxn", "timepoint", "subset"),
+    cmbn = "cyt_combn",
+    markers_to_sum = c("17"),
+    resp = "response"
+  )
+```
+
+There are no entries with missing sex data:
+
+```{r}
+data_tidy_h56 |>
+  dplyr::filter(!sex %in% c("male", "female"))
+```
+
+```{r}
+UtilsDataRSV::view_cols(data_tidy_h56)
+```
+
+There is one individual with missing CD8 T cell data, for some reason:
+
+```{r}
+data_tidy_h56 |>
+  dplyr::filter(is.na(response))
+```
+
+I think we just remove them.
+
+```{r}
+data_tidy_h56 <- data_tidy_h56 |>
+  dplyr::filter(
+    !is.na(response)
+  )
+```
 
 ```{r}
 set.seed(21)
@@ -2107,119 +2124,4 @@ data_tidy_vacc_freq |>
   )
 ```
 
-# Compare to previous data
 
-```{r}
-data("join17ExcTbl", package = "DataTidy19RodoVaccComp")
-data_tidy_old <- join17ExcTbl
-vacc_lab_old <- c(
-  "1" = "aeras402",
-  "2" = "h56",
-  "3" = "m72",
-  "4" = "mva85a",
-  "5" = "h1",
-  "6" = "id93",
-  "7" = "bcg",
-  "8" = "megapool"
-)
-data_tidy_old <- data_tidy_old |>
-  dplyr::mutate(
-    vaccine = vacc_lab_old[vaccine],
-    subset = ifelse(grepl("^CD4", cytCombo), "cd4", "cd8"),
-    infxn = ifelse(infxn == "0", "uninfected", "infected")
-  ) |>
-  dplyr::inner_join(
-    data_tidy_vacc_freq |>
-      dplyr::select(vaccine, infxn) |>
-      dplyr::group_by(vaccine, infxn) |>
-      dplyr::slice(1) |>
-      dplyr::ungroup() ,
-    by = c("vaccine", "infxn")
-  ) |>
-  dplyr::rename(
-    timepoint = timePoint
-  )
-```
-
-```{r}
-data_tidy_old_summed <- data_tidy_old |>
-  dplyr::group_by(vaccine, infxn, ptid, subset, timepoint) |>
-  dplyr::summarise(resp = sum(resp), .groups = "drop") 
-```
-
-```{r}
-data_tidy_new_summed <- data_tidy_vacc_freq |>
-  dplyr::inner_join(
-    data_tidy_old_comp |>
-      dplyr::select(vaccine, infxn) |>
-      dplyr::group_by(vaccine, infxn) |>
-      dplyr::slice(1) |>
-      dplyr::ungroup(),
-    by = c("vaccine", "infxn")
-  ) |>
-  dplyr::group_by(vaccine, timepoint, infxn, ptid, subset) |>
-  dplyr::summarize(resp = sum(response), .groups = "drop")
-```
-
-```{r}
-data_tidy_comp_plot <- data_tidy_new_summed |>
-  dplyr::mutate(type = "old") |>
-  dplyr::bind_rows(
-    data_tidy_old_summed |>
-      dplyr::mutate(type = "new")
-  )
-```
-
-```{r}
-p_comp_summed_d0 <- ggplot(
-  data_tidy_comp_plot |>
-    dplyr::filter(subset == "cd4") |>
-    dplyr::filter(timepoint == 0) |>
-    dplyr::mutate(
-      infxn = factor(.data[["infxn"]], levels = c("uninfected", "infected"))
-    ) |>
-    dplyr::mutate(
-      vaccine = vacc_lab_tidy[vaccine]
-    ) |>
-    dplyr::mutate(
-      type = factor(.data[["type"]], levels = c("old", "new"))
-    ),
-  aes(x = vaccine, y = resp)
-  ) +
-  geom_boxplot(aes(fill = type), position = "dodge") +
-  facet_wrap(
-    ~infxn,
-    ncol = 1, scales = "free", labeller = labeller(infxn = infxn_lab_tidy)
-  ) +
-  cowplot::theme_cowplot() +
-  cowplot::background_grid(major = "y", minor = "y") +
-  theme( # nolint
-    strip.background = element_rect(fill = "white", colour = "black") # nolint
-  ) +
-  scale_fill_manual(
-    values = c("old" = "dodgerblue", "new" = "orange"),
-    labels = c("old" = "Rodo (2019)", "new" = "Sex study")
-  ) +
-  theme(legend.title = element_blank()) +
-  labs(
-    y = "Summed CD4 response at day zero",
-    x = "Vaccine"
-  )
-p_comp_summed_d0 <- p_comp_summed_d0  |> plot_bw_set_white()
-  
-path_p <- projr::projr_path_get(
-  "output-private", "fig", "process", "p-comparison-summed.png"
-)
-ggsave(
-  path_p,
-  plot = p_comp_summed_d0,
-  height = 10, width = 17, units = "cm"
-)
-```
-
-```{r}
-#| results: asis
-knitr::include_graphics(path_p)
-```
-
-- Responses in the new study seem to be consistently lower. Did we subtract unstim more times?
