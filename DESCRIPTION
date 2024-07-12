@@ -1,12 +1,13 @@
-Package: DataTidy19RodoVaccComp
+Package: DataTidy24TBVaccSexDiff
 Title: Processing data for Rodo (2019) TB vaccine candidate comparison paper
-Version: 1.11.2-1
+Version: 1.12.0
 Authors@R: person("Miguel", "Rodo", , "miguel.rodo@uct.ac.za", role = c("aut", "cre"))
 Maintainer: Miguel Rodo <miguel.rodo@uct.ac.za>
-Description: Processing data for Rodo (2019) TB vaccine candidate comparison paper
+Description: Processing data for assessment of sex-associated differences
+    in TB vaccine-induced Mtb-specific CD4 T cell responses.
 License: CC BY 4.0
-URL: https://github.com/SATVILab/DataTidy19RodoVaccComp/#readme
-BugReports: https://github.com/SATVILab/DataTidy19RodoVaccComp/issues
+URL: https://github.com/SATVILab/DataTidy24TBVaccSexDiff/#readme
+BugReports: https://github.com/SATVILab/DataTidy24TBVaccSexDiff/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

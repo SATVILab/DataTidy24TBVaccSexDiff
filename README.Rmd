@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+library(tibble)
 ```
 
 # DataTidy24TBVaccSexDiff
@@ -30,13 +31,73 @@ remotes::install_github(
 )
 ```
 
-To load the data, run 
+## Usage
+
+`DataTidy24TBVaccSexDiff` provides processed data, as well as convenience functions for calculating transformations of the response (summed and profile; see Rodo (2019) for details) and extracting relevant timepoints (baseline, peak and memory; again, see Rodo (2019) for details).
+
+### Loading data
+
+To load the data, run:
 
 ```{r}
-load(
-  "data_tidy_vacc_freq",
-  package = "DataTidy24TBVaccSexDiff"
+library(DataTidy24TBVaccSexDiff)
+data("data_tidy_vacc_freq")
+data_tidy_vacc_freq
+```
+
+## Calculating summed and profile responses
+
+To calculate the summed response, run:
+
+```{r}
+vacc_calc_response_summed(
+  data_tidy_vacc_freq, "response"
 )
+```
+
+To calculate the summed profile, run:
+
+```{r}
+vacc_calc_response_profile(
+  data_tidy_vacc_freq, "response"
+)
+```
+
+## Extracting timepoints
+
+To extract the baseline response, run:
+
+```{r}
+vacc_extract_baseline(data_tidy_vacc_freq)
+```
+
+To extract the peak response, run:
+
+```{r}
+vacc_extract_peak(data_tidy_vacc_freq)
+```
+
+To extract the memory response, run:
+
+```{r}
+vacc_extract_memory(data_tidy_vacc_freq)
+```
+
+Note that these work automatically after the calculation of summed or profile responses (and the order is irrelevant), for example:
+
+```{r}
+data_tidy_vacc_freq |>
+  vacc_calc_response_summed("response") |>
+  vacc_extract_peak()
+data_tidy_vacc_freq |>
+  vacc_extract_baseline() |>
+  vacc_calc_response_profile("response")
+```
+
+In addition, a convenience function for setting negative responses to zero is provided:
+
+```{r}
+vacc_set_neg_to_zero(data_tidy_vacc_freq, "response")
 ```
 
 ## Reproduction

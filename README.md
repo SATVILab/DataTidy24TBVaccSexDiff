@@ -1,253 +1,226 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DataTidy19RodoVaccComp
+# DataTidy24TBVaccSexDiff
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-VaccCompData provides the raw data and the scripts used to process them
-for the paper ‘A comparison of antigen-specific T cell responses induced
-by six novel tuberculosis vaccine candidates’. Its installation is
-required to run the analysis script in the package VaccComp.
-
-Note that this is a more reproducible version of the GitHub repository
-`MiguelRodo/VaccCompData`.
+The purpose of `DataTidy24TBVaccSexDiff` is to generate analysis-ready
+data for the assessment of sex-associated differences in TB
+vaccine-induced antigen-specific CD4 T cell responses.
 
 ## Installation
 
-To install VaccCompData, run:
+To install `DataTidy24TBVaccSexDiff`, run:
 
-    remotes::install_github("MiguelRodo/VaccCompData")
+``` r
+remotes::install_github(
+  "SATVILab/DataTidy24TBVaccSexDiff"
+)
+```
 
-The processed data can be loaded as normal datasets from an R package.
+## Usage
 
-## Reproducing
+`DataTidy24TBVaccSexDiff` provides processed data, as well as
+convenience functions for calculating transformations of the response
+(summed and profile; see Rodo (2019) for details) and extracting
+relevant timepoints (baseline, peak and memory; again, see Rodo (2019)
+for details).
 
-The raw data are kept in the release `input` on GitHub, and must be
-saved to the `data-raw-public` directory (as specified in `_projr.yml`)
-to run the data.
+### Loading data
 
-Then run `projr::projr_build_dev()` to rebuild the projects. The project
-outputs will be saved to the `cache` directory (as specified in
-`_projr.yml`).
+To load the data, run:
 
-The schematic describes data processing by stage, specifying the outputs
-and processing files and providing details.
-<img src="_data_raw/public/img/Data_Prep_Flow.png" width="100%" />
+``` r
+library(DataTidy24TBVaccSexDiff)
+data("data_tidy_vacc_freq")
+data_tidy_vacc_freq
+#> # A tibble: 7,763 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t+      0.0988
+#>  2 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t-      0.0096
+#>  3 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t+      0.0068
+#>  4 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t-      0.0084
+#>  5 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t+      0.0236
+#>  6 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t-      0     
+#>  7 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2-t+      0.0129
+#>  8 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2-t+      0.013 
+#> # ℹ 7,753 more rows
+```
 
-## Raw data
+## Calculating summed and profile responses
 
-This vignette first describes each of the raw data files.
+To calculate the summed response, run:
 
-The raw data provided are not cell counts, but are the frequencies of
-cells producing some combination of the cytokines IFN*γ*, IL-2 and TNF.
-All raw data except that in the file megapool.csv also include IL-17,
-and the file bcg.xlsx also included IL-22.
+``` r
+vacc_calc_response_summed(
+  data_tidy_vacc_freq, "response"
+)
+#> # A tibble: 1,109 × 7
+#>    vaccine prid  timepoint infxn      ptid       subset response
+#>    <chr>   <chr>     <dbl> <chr>      <chr>      <chr>     <dbl>
+#>  1 bcg     040           0 uninfected bcg-040-1  cd4     0.213  
+#>  2 bcg     040           0 uninfected bcg-040-1  cd8     0.00718
+#>  3 bcg     040           0 uninfected bcg-040-10 cd4     0.0348 
+#>  4 bcg     040           0 uninfected bcg-040-10 cd8     0.00284
+#>  5 bcg     040           0 uninfected bcg-040-11 cd4     0.0443 
+#>  6 bcg     040           0 uninfected bcg-040-11 cd8     0.0192 
+#>  7 bcg     040           0 uninfected bcg-040-12 cd4     0.233  
+#>  8 bcg     040           0 uninfected bcg-040-12 cd8     0.0431 
+#>  9 bcg     040           0 uninfected bcg-040-13 cd4     0.178  
+#> 10 bcg     040           0 uninfected bcg-040-13 cd8     0.0278 
+#> # ℹ 1,099 more rows
+```
 
-### Raw data files
+To calculate the summed profile, run:
 
-#### AERAS-402
+``` r
+vacc_calc_response_profile(
+  data_tidy_vacc_freq, "response"
+)
+#> # A tibble: 7,763 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t+      0.0988
+#>  2 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t-      0.0096
+#>  3 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t+      0.0068
+#>  4 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t-      0.0084
+#>  5 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t+      0.0236
+#>  6 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t-      0     
+#>  7 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2-t+      0.0129
+#>  8 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2-t+      0.013 
+#> # ℹ 7,753 more rows
+```
 
--   File name
-    -   aeras402.xlsx
--   Columns
-    -   PatientID: participant identification number.
-    -   TubeName: stimulation condition.
-    -   TimePoint: Days since first vaccination.
-    -   CD4+2+17+G+T+ to CD8+2-17-G-T+
-        -   Indicates CD4/CD8 cell subset and cytokines produced.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   2\[+/-\]17\[+/-\]G\[+/-\]T\[+/-\] indicates the cytokine
-            combination. ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to
-            IFN*γ* and ‘T’ to TNF. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   Yes
+## Extracting timepoints
 
-#### BCG
+To extract the baseline response, run:
 
--   File name
-    -   bcg.xlsx
--   Sheets
-    -   CD4 and CD8
-    -   Frequencies for CD4 and CD8 T cells, respectively.
--   Columns
-    -   Sample: Sample label.
-    -   PTID: participant identification number.
-    -   Stimulation: stimulation condition.
-    -   Study Day
-        -   Days since initial vaccination.
-        -   ‘V08’ corresponds to day 0.
-        -   ‘V13’ corresponds to day 21.
-        -   ‘V15’ corresponds to day 35.
-        -   ‘V28’ corresponds to day 365.
-        -   QUESTION: need to find out what SC-3 and V01 are.
-    -   Group
-        -   The order of isonaizid, BCG and observation.
-        -   ‘IBO’ means isoniazid first, BCG second and observation
-            last.
-        -   ‘OBI’ means observation first, BCG second and isoniazid
-            last.
-        -   QUESTION: is this correct?
-    -   Subset: whether CD4 or CD8 T cells.
-    -   CD\[4/8\]+/2+ to CD\[4/8\]+/2-17-22-g-T-
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ*, ‘T’
-            to TNF and ‘22’ to IL-22. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
+``` r
+vacc_extract_baseline(data_tidy_vacc_freq)
+#> # A tibble: 1,806 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2+t+      0     
+#>  2 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2+t-      0     
+#>  3 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2-t+      0     
+#>  4 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2-t-      0     
+#>  5 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2+t+      0.0006
+#>  6 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2+t-      0.0009
+#>  7 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2-t+      0.0009
+#>  8 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2-t+      0     
+#> # ℹ 1,796 more rows
+```
 
-#### H1:IC31
+To extract the peak response, run:
 
-There are two files associated with H1. They are detailed separately
-below. THe first, h1-group\_info.xlsx, was used to determine which study
-group each participant was allocated to, where the group determines the
-dose size and number of doses. The second, h1.xlsx, contains the immune
-response measurements.
+``` r
+vacc_extract_peak(data_tidy_vacc_freq)
+#> # A tibble: 1,785 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g+2+t+      0.0289
+#>  2 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g+2+t-      0.0105
+#>  3 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g+2-t+      0.0068
+#>  4 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g+2-t-      0     
+#>  5 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g-2+t+      0.007 
+#>  6 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g-2+t-      0.0052
+#>  7 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd4    g-2-t+      0.0132
+#>  8 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd8    g+2+t+      0.0011
+#>  9 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-8 male  uninf…         7 cd8    g+2-t+      0     
+#> # ℹ 1,775 more rows
+```
 
--   File name
-    -   h1-group\_info.xlsx
--   Columns
-    -   SubjectID: participant identification number.
-    -   Group
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
--   File name
-    -   h1.xlsx
--   Columns
-    -   Sample: Sample label.
-    -   $FIL: Slightly shortened sample label.
-    -   SAMPLE ID: participant id number.
-    -   Group
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘2 denotes infected, and ’1’ uninfected.
-    -   Timepoint: days since first vaccination.
-    -   TUBE NAME: stimulation condition.
-    -   CD4+/G+T+2+17+ to CD8+/G-T-2-17-
-        -   Indicates CD4/CD8 cell subset and cytokines produced.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   G\[+/-\]T\[+/-\]2\[+/-\]17\[+/-\] indicates the cytokine
-            combination. ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to
-            IFN*γ* and ‘T’ to TNF. A ‘+’ indicates that the preceding
-            cytokine was produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
+To extract the memory response, run:
 
-#### H56:IC31
+``` r
+vacc_extract_memory(data_tidy_vacc_freq)
+#> # A tibble: 1,456 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g+2+t+      0.0393
+#>  2 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g+2+t-      0.0035
+#>  3 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g+2-t+      0.0015
+#>  4 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g+2-t-      0.0006
+#>  5 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g-2+t+      0.0063
+#>  6 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g-2+t-      0.002 
+#>  7 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd4    g-2-t+      0     
+#>  8 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-5 male  uninf…       168 cd8    g+2-t+      0.014 
+#> # ℹ 1,446 more rows
+```
 
--   File name
-    -   h56.xlsx
--   Sheets
-    -   CD4 Freq and CD8 Freq
-    -   Frequencies for CD4 and CD8 T cells, respectively.
--   Columns
-    -   Group
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
-    -   LTBI
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘pos’ denotes infected, and ‘neg’ uninfected.
-    -   PTID: participant id number
-    -   Stimulation: stimulation condition.
-    -   Study Day: days since first vaccination.
-    -   Vaccine/Placebo
-        -   Whether or not a vaccine or placebo was given to the
-            participant.
-        -   ‘vaccine’ means that the participant was given a vaccine,
-            and ‘placebo’ that the participant was given a placebo.
-    -   Dose: dose size.
-    -   Regimen (#injections): number of vaccinations participant
-        received as part of study.
-    -   CD\[4/8\]+: NOOOOOOOOOOOOOOOOOT SUUUUUUUUUUUUUUUUUUUURE.
-    -   CD\[4/8\]+:CD\[4/8\]g-T-2-17-
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘+’ indicates that the preceding cytokine was
-            produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
+Note that these work automatically after the calculation of summed or
+profile responses (and the order is irrelevant), for example:
 
-#### ID93+GLA-SE
+``` r
+data_tidy_vacc_freq |>
+  vacc_calc_response_summed("response") |>
+  vacc_extract_peak()
+#> # A tibble: 255 × 7
+#>    vaccine prid  timepoint infxn      ptid       subset response
+#>    <chr>   <chr>     <dbl> <chr>      <chr>      <chr>     <dbl>
+#>  1 bcg     040          70 uninfected bcg-040-1  cd4     0.418  
+#>  2 bcg     040          70 uninfected bcg-040-1  cd8     0.00475
+#>  3 bcg     040          70 uninfected bcg-040-10 cd4     0.317  
+#>  4 bcg     040          70 uninfected bcg-040-10 cd8     0.0182 
+#>  5 bcg     040          70 uninfected bcg-040-11 cd4     0.0566 
+#>  6 bcg     040          70 uninfected bcg-040-11 cd8     0.0148 
+#>  7 bcg     040          70 uninfected bcg-040-12 cd4     0.422  
+#>  8 bcg     040          70 uninfected bcg-040-12 cd8     0.00383
+#>  9 bcg     040          70 uninfected bcg-040-13 cd4     0.195  
+#> 10 bcg     040          70 uninfected bcg-040-13 cd8     0.0302 
+#> # ℹ 245 more rows
+data_tidy_vacc_freq |>
+  vacc_extract_baseline() |>
+  vacc_calc_response_profile("response")
+#> # A tibble: 1,806 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2+t+      0     
+#>  2 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2+t-      0     
+#>  3 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2-t+      0     
+#>  4 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g+2-t-      0     
+#>  5 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2+t+      0.0006
+#>  6 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2+t-      0.0009
+#>  7 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd4    g-2-t+      0.0009
+#>  8 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-8 male  uninf…         0 cd8    g+2-t+      0     
+#> # ℹ 1,796 more rows
+```
 
--   File name
-    -   id93.xlsx
--   Columns
-    -   SAMPLE ID: participant identification number.
-    -   Date of Blod Draw: date of blood draw.
-    -   COHORT
-        -   Study group number - 1, 2, 3 or 4.
-        -   Determines dose size and number of doses.
-    -   Study Day: days since first vaccination.
-    -   RANDOMISATION
-        -   Whether or not a vaccine or placebo was given to the
-            participant.
-        -   ‘ID93+GLA/SE’ means that the participant was given a
-            vaccine, and ‘Placebo’ that the participant was given a
-            placebo.
-    -   QFT Status
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘QFT+’ denotes infected, and ‘QFT-’ uninfected.  
-    -   TUBE NAME: stimulation condition.
-    -   CD8+/G+T+2+17+ to CD4+/G-T-2-17+
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]+ indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘+’ indicates that the preceding cytokine was
-            produced, and a ‘-’ that it was not.
--   Responses background subtracted?
-    -   No
+In addition, a convenience function for setting negative responses to
+zero is provided:
 
-#### Megapool
+``` r
+vacc_set_neg_to_zero(data_tidy_vacc_freq, "response")
+#> # A tibble: 7,763 × 9
+#>    vaccine prid  ptid           sex   infxn  timepoint subset cyt_combn response
+#>    <chr>   <chr> <chr>          <chr> <chr>      <dbl> <chr>  <chr>        <dbl>
+#>  1 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t+      0.0988
+#>  2 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2+t-      0.0096
+#>  3 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t+      0.0068
+#>  4 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g+2-t-      0.0084
+#>  5 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t+      0.0236
+#>  6 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2+t-      0     
+#>  7 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd4    g-2-t+      0.0129
+#>  8 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t+      0     
+#>  9 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2+t-      0     
+#> 10 mva85a  tb008 mva85a-tb008-5 male  uninf…        28 cd8    g+2-t+      0.013 
+#> # ℹ 7,753 more rows
+```
 
--   File name
-    -   megapool.csv
--   Columns
-    -   Donor.ID: participant identification number.
-    -   SubjectType
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   All subjects have value ‘LTBI’ for this column, meaning that
-            their quantiferon score was greater than 0.35.
-        -   Stimulation: stimulation condition.
-    -   CD4.Gneg2negTpos…Count to CD8.Gpos2posTneg…Freq..of.Parent
-        -   Cell subset frequency of count.
-        -   CD\[4/8\] indicates whether the cells are CD4 or CD8 T
-            cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘pos’ indicates that the preceding cytokine
-            was produced, and a ‘neg’ that it was not.
--   Responses background subtracted?
-    -   No
+## Reproduction
 
-#### M72:AS01E and MVA85A
-
--   File name
-    -   main.xlsx
--   Columns
-    -   PatientID: patient identification number.
-    -   TubeName: stimulation condition.
-    -   Protocol ID: protocol identification number.
-    -   Vaccine: vaccine administered.
-    -   UniqueID: concatenation of PatientID, TubeName, Vaccine and
-        TimePoint.
-    -   Infxn
-        -   Mycobacterium tuberculosis infection status according to a
-            quantiferon cut-off of 0.35 at time of first vaccination.
-        -   ‘positive’ denotes infected, and ‘negative’ uninfected.  
-    -   TimePoint: time since first vaccination.
-    -   CD4posGpos2pos17posTpos to TotCD8posTpos
-        -   Frequencies of cell subsets.
-        -   CD\[4/8\]pos indicates whether cells are CD4 or CD8 T cells.
-        -   ‘2’ corresponds to IL-2, ‘17’ to IL-17, ‘G’ to IFN*γ* and
-            ‘T’ to TNF. A ‘pos’ indicates that the preceding cytokine
-            was produced, and a ‘neg’ that it was not.
--   Responses background subtracted?
-    -   Yes
-
-### Data processing schematic
+*To be completed*

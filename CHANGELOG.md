@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- *Minor* (v1.12.0): Miguel Julio Rodo (13:45:56)
+  - Add corrected data, calc and extraction functions and comparison plots
+
 - Patch (v1.11.2): Miguel Julio Rodo (09:06:26)
   - Correct H56 sex data and improve longitudinal plot
 - Patch (v1.11.1): Miguel Julio Rodo (15:12:16)
