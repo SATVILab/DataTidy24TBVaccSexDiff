@@ -44,7 +44,7 @@ data_tidy_vacc_freq
 ### Rodo (2019)
 
 ```{r}
-data("join17ExcTbl", package = "DataTidy19RodoVaccComp")
+data("join17ExcTbl", package = "VaccCompData")
 data_tidy_old <- join17ExcTbl
 vacc_lab_old <- c(
   "1" = "aeras402",

@@ -45,7 +45,7 @@ data("data_tidy_vacc_freq")
 data_tidy_vacc_freq
 ```
 
-## Calculating summed and profile responses
+### Calculating summed and profile responses
 
 To calculate the summed response, run:
 
@@ -63,7 +63,7 @@ vacc_calc_response_profile(
 )
 ```
 
-## Extracting timepoints
+### Extracting timepoints
 
 To extract the baseline response, run:
 
