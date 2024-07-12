@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- *Minor* (v1.13.0): Miguel Julio Rodo (14:11:55)
+  - Add informative README
+
 - *Minor* (v1.12.0): Miguel Julio Rodo (13:45:56)
   - Add corrected data, calc and extraction functions and comparison plots
 
