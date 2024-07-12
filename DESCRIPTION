@@ -1,6 +1,6 @@
 Package: DataTidy24TBVaccSexDiff
 Title: Processing data for Rodo (2019) TB vaccine candidate comparison paper
-Version: 1.13.0
+Version: 1.13.1
 Authors@R: person("Miguel", "Rodo", , "miguel.rodo@uct.ac.za", role = c("aut", "cre"))
 Maintainer: Miguel Rodo <miguel.rodo@uct.ac.za>
 Description: Processing data for assessment of sex-associated differences in TB vaccine-induced Mtb-specific CD4 T cell responses.
@@ -13,3 +13,5 @@ RoxygenNote: 7.3.1
 Depends: R (>= 2.10)
 LazyData: true
 Suggests: tibble
+Imports: 
+    dplyr
