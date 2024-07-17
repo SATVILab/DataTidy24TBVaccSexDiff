@@ -74,8 +74,8 @@ vacc_calc_vaccine_induced_response <- function(.data,
   # will choose only those that are found in `.data`
   if (is.null(grp)) {
     grp <- c(
-      "vaccine", "prid", "timepoint", "infxn", "ptid", "subset", "cyt_combn",
-      "type"
+      "type", "vaccine", "prid", "timepoint", "infxn", "sex",
+      "ptid", "subset", "cyt_combn"
     )
   }
   grp[grp %in% colnames(.data)]
