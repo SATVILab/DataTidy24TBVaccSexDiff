@@ -58,8 +58,8 @@ vacc_calc_vaccine_induced_response <- function(.data,
   # calculate the median day zero value
   # allow setting the grouping variables in advance
   # so that this function can be used throughout
-  grp_vec <- .get_grp_vec(.data, grp = grp)
-  grp_vec <- setdiff(grp_vec, c("timepoint", "ptid"))
+  grp_vec <- .get_grp_vec(.data, grp = grp) |>
+    setdiff(c("sex", "ptid", "timepoint"))
   .data |>
     dplyr::filter(timepoint == 0) |> # nolint
     dplyr::group_by(dplyr::across(grp_vec)) |> # nolint
