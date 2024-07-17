@@ -54,19 +54,19 @@ To calculate the summed response, run:
     vacc_calc_response_summed(
       data_tidy_vacc_freq, "response"
     )
-    #> # A tibble: 1,109 × 7
-    #>    vaccine prid  timepoint infxn      ptid       subset response
-    #>    <chr>   <chr>     <dbl> <chr>      <chr>      <chr>     <dbl>
-    #>  1 bcg     040           0 uninfected bcg-040-1  cd4     0.213  
-    #>  2 bcg     040           0 uninfected bcg-040-1  cd8     0.00718
-    #>  3 bcg     040           0 uninfected bcg-040-10 cd4     0.0348 
-    #>  4 bcg     040           0 uninfected bcg-040-10 cd8     0.00284
-    #>  5 bcg     040           0 uninfected bcg-040-11 cd4     0.0443 
-    #>  6 bcg     040           0 uninfected bcg-040-11 cd8     0.0192 
-    #>  7 bcg     040           0 uninfected bcg-040-12 cd4     0.233  
-    #>  8 bcg     040           0 uninfected bcg-040-12 cd8     0.0431 
-    #>  9 bcg     040           0 uninfected bcg-040-13 cd4     0.178  
-    #> 10 bcg     040           0 uninfected bcg-040-13 cd8     0.0278 
+    #> # A tibble: 1,109 × 8
+    #>    vaccine prid  timepoint infxn      sex    ptid       subset response
+    #>    <chr>   <chr>     <dbl> <chr>      <chr>  <chr>      <chr>     <dbl>
+    #>  1 bcg     040           0 uninfected female bcg-040-11 cd4     0.0443 
+    #>  2 bcg     040           0 uninfected female bcg-040-11 cd8     0.0192 
+    #>  3 bcg     040           0 uninfected female bcg-040-15 cd4     0.954  
+    #>  4 bcg     040           0 uninfected female bcg-040-15 cd8     0.187  
+    #>  5 bcg     040           0 uninfected female bcg-040-16 cd4     0.0496 
+    #>  6 bcg     040           0 uninfected female bcg-040-16 cd8     0.00202
+    #>  7 bcg     040           0 uninfected female bcg-040-2  cd4     0.175  
+    #>  8 bcg     040           0 uninfected female bcg-040-2  cd8     0.0254 
+    #>  9 bcg     040           0 uninfected female bcg-040-21 cd4     0.103  
+    #> 10 bcg     040           0 uninfected female bcg-040-21 cd8     0.0294 
     #> # ℹ 1,099 more rows
 
 To calculate the summed profile, run:
@@ -151,19 +151,19 @@ profile responses (and the order is irrelevant), for example:
     data_tidy_vacc_freq |>
       vacc_calc_response_summed("response") |>
       vacc_extract_peak()
-    #> # A tibble: 255 × 7
-    #>    vaccine prid  timepoint infxn      ptid       subset response
-    #>    <chr>   <chr>     <dbl> <chr>      <chr>      <chr>     <dbl>
-    #>  1 bcg     040          70 uninfected bcg-040-1  cd4     0.418  
-    #>  2 bcg     040          70 uninfected bcg-040-1  cd8     0.00475
-    #>  3 bcg     040          70 uninfected bcg-040-10 cd4     0.317  
-    #>  4 bcg     040          70 uninfected bcg-040-10 cd8     0.0182 
-    #>  5 bcg     040          70 uninfected bcg-040-11 cd4     0.0566 
-    #>  6 bcg     040          70 uninfected bcg-040-11 cd8     0.0148 
-    #>  7 bcg     040          70 uninfected bcg-040-12 cd4     0.422  
-    #>  8 bcg     040          70 uninfected bcg-040-12 cd8     0.00383
-    #>  9 bcg     040          70 uninfected bcg-040-13 cd4     0.195  
-    #> 10 bcg     040          70 uninfected bcg-040-13 cd8     0.0302 
+    #> # A tibble: 255 × 8
+    #>    vaccine prid  timepoint infxn      sex    ptid       subset response
+    #>    <chr>   <chr>     <dbl> <chr>      <chr>  <chr>      <chr>     <dbl>
+    #>  1 bcg     040          70 uninfected female bcg-040-11 cd4     0.0566 
+    #>  2 bcg     040          70 uninfected female bcg-040-11 cd8     0.0148 
+    #>  3 bcg     040          70 uninfected female bcg-040-15 cd4     0.105  
+    #>  4 bcg     040          70 uninfected female bcg-040-15 cd8     0.00132
+    #>  5 bcg     040          70 uninfected female bcg-040-16 cd4     0.00594
+    #>  6 bcg     040          70 uninfected female bcg-040-16 cd8     0.0243 
+    #>  7 bcg     040          70 uninfected female bcg-040-2  cd4     0.440  
+    #>  8 bcg     040          70 uninfected female bcg-040-2  cd8     0.00312
+    #>  9 bcg     040          70 uninfected female bcg-040-21 cd4     0.280  
+    #> 10 bcg     040          70 uninfected female bcg-040-21 cd8     0.0176 
     #> # ℹ 245 more rows
     data_tidy_vacc_freq |>
       vacc_extract_baseline() |>

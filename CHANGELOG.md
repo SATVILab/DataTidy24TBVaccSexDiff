@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- Patch (v1.13.2): Miguel Julio Rodo (08:30:07)
+  - Group by sex by default when calculating response transformations
 - *Minor* (v1.13.0): Miguel Julio Rodo (14:11:55)
   - Add informative README
 
