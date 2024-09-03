@@ -75,6 +75,20 @@ data_tidy_vacc_vi_profile <- data_tidy_vacc_vi |>
 data_tidy_vacc_vi_profile
 ```
 
+### Proportion of cells that are IFN$\gamma+$
+
+This shares a one-to-one relationship with the functional differentiation score (FDS) when we use raw responses, as the FDS is entirely based on the proportion of cells that are IFN$\gamma+$.
+
+When the vaccine-induced response is used, the value calculated here relates to the FDS the same way the proportion of the response that is a particular cytokine combination relates between the vaccine-induced and the raw response.
+
+```{r}
+data_tidy_vacc_raw_fds_prop <- data_tidy_vacc_freq |>
+  vacc_calc_fds_prop(cn_resp = "response")
+data_tidy_vacc_vi_fds_prop <- data_tidy_vacc_vi |>
+  vacc_calc_fds_prop(cn_resp = "response")
+data_tidy_vacc_vi_fds_prop
+```
+
 ## Subset
 
 The functions `vacc_extract_baseline`, `vacc_extract_peak`, and `vacc_extract_memory`

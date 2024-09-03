@@ -3,11 +3,14 @@
 \name{vacc_calc_response_summed}
 \alias{vacc_calc_response_summed}
 \alias{vacc_calc_response_profile}
+\alias{vacc_calc_fds_prop}
 \title{Calculate the summed and profile response}
 \usage{
 vacc_calc_response_summed(.data, cn_resp, grp = NULL)
 
 vacc_calc_response_profile(.data, cn_resp, grp = NULL)
+
+vacc_calc_fds_prop(.data, cn_resp, grp = NULL)
 }
 \arguments{
 \item{.data}{A data frame.}

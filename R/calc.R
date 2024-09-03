@@ -145,3 +145,32 @@ vacc_calc_response_profile <- function(.data, cn_resp, grp = NULL) {
   .data[, cn_resp] <- .data[["response"]]
   .data |> dplyr::select(-response) # nolint
 }
+
+#' @rdname calc_response_transformation
+#' @export
+vacc_calc_fds_prop <- function(.data, cn_resp, grp = NULL) {
+  data_profile <- vacc_calc_response_profile(
+    .data, cn_resp = cn_resp, grp = grp
+  )
+  data_profile |>
+    .vacc_calc_fds_prop_sum(cn_resp = cn_resp, grp = grp)
+}
+
+.vacc_calc_fds_prop_sum <- function(.data, cn_resp, grp) {
+  grp_vec <- .get_grp_vec(.data, grp = grp) |> setdiff("cyt_combn")
+  .data |>
+    dplyr::group_by(dplyr::across(grp_vec)) |>
+    dplyr::mutate(
+      response =
+        sum(
+          .data[[cn_resp]][grepl("^g\\+", .data[["cyt_combn"]])],
+          na.rm = TRUE
+        )
+      ) |>
+    dplyr::ungroup()
+  if (cn_resp == "response") {
+    return(.data)
+  }
+  .data[, cn_resp] <- .data[["response"]]
+  .data |> dplyr::select(-response) # nolint
+}

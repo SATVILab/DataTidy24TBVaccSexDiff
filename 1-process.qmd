@@ -110,6 +110,24 @@ data_tidy_sex_h1 <- data_raw_sex_h1 |>
 UtilsDataRSV::view_cols(data_tidy_sex_h1)
 ```
 
+## M72
+
+### TB010
+
+```{r}
+data_raw_sex_gsk_010 <- readxl::read_xlsx(
+  projr::projr_path_get(
+    "data-raw-private", "day-2024_07_11-GSK Participants - Blood results sonder names-sex_only.xlsx"
+  )
+)
+data_tidy_sex_gsk_010 <- data_raw_sex_gsk_010 |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    across(where(is.character), tolower)
+  )
+UtilsDataRSV::view_cols(data_tidy_sex_gsk_010)
+```
+
 # ID93
 
 ```{r}
@@ -537,21 +555,146 @@ There are only 8 subjects here, and used 27 in the 2019 paper (15 uninfected and
 This is for protocol `GSK.010`.
 
 ```{r}
-gsk_tbl <- main_tbl |>
+gsk_tbl_010 <- main_tbl |>
   dplyr::filter(`Protocol ID` == "GSK.010")
-gsk_tbl_pid <- gsk_tbl |>
+gsk_tbl_010_pid <- gsk_tbl_010 |>
   dplyr::group_by(PatientID) |>
   dplyr::slice(1) |>
   dplyr::select(PatientID) |>
   dplyr::ungroup()
-gsk_tbl_pid
+gsk_tbl_010_pid
 ```
 
 Here are the sex data for the 010 trial:
 
 ```{r}
-
+data_tidy_sex_gsk_010 
 ```
+
+So, it seems that we can match the pids by just converting them to to numbers to remove the leadings zeros:
+
+```{r}
+gsk_tbl_010_join <- gsk_tbl_010 |>
+  dplyr::left_join(
+    data_tidy_sex_gsk_010 |>
+      dplyr::select(study_no, sex, quantiferon, mantoux, group) |>
+      dplyr::rename(PatientID = study_no) |>
+      dplyr::mutate(PatientID = as.character(as.numeric(PatientID))),
+    by = "PatientID" 
+  )
+```
+
+We matched TST cutoffs from the sex data to the infection status data perfectly:
+
+```{r}
+gsk_tbl_010_join |>
+  dplyr::arrange(PatientID) |>
+  dplyr::select(
+    PatientID, Infxn, quantiferon, mantoux, sex
+  ) |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::filter(
+    Infxn == "no" & as.numeric(mantoux)  >= 10 | (
+      Infxn == "yes" & as.numeric(mantoux) < 10
+    )
+  )
+```
+
+Everyone matched:
+
+```{r}
+gsk_tbl_010_join |>
+  dplyr::arrange(PatientID) |>
+  dplyr::select(
+    PatientID, Infxn, sex
+  ) |>
+  dplyr::group_by(PatientID) |>
+  dplyr::slice(1) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(
+    Infxn, sex
+  ) |>
+  dplyr::summarise(
+    count = dplyr::n(),
+    .groups = "drop"
+  )
+```
+
+Okay, so we have only four uninfected males, but we do have at least ten in every other group. This looks good.
+
+```{r}
+#data_tidy_m72_tb010 <-
+data_tidy_m72_tb010_init <- gsk_tbl_010_join |>
+  dplyr::mutate(
+    prid = "tb010",
+    vaccine = "m72",
+    ptid = PatientID
+  ) |>
+  dplyr::rename(
+    infxn = Infxn,
+    timepoint = TimePoint
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, infxn, sex, timepoint, everything()
+  ) |>
+  dplyr::select(
+    -c(
+      PatientID, `Protocol ID`, Vaccine,
+      quantiferon, mantoux, group
+    )
+  )
+```
+
+```{r}
+data_tidy_m72_tb010_pre_anon <- data_tidy_m72_tb010_init |>
+  dplyr::select(-starts_with("Tot")) |>
+  tidyr::pivot_longer(
+    -c(ptid, prid, vaccine, infxn, sex, timepoint),
+    names_to = "cyt_combn",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    cyt_combn = tolower(cyt_combn),
+    subset = ifelse(grepl("cd4", cyt_combn), "cd4", "cd8"),
+    subset = ifelse(grepl("cdpos8", cyt_combn), "cd8", subset),
+    cyt_combn = gsub("^cd4|^cd8|^cdpos8", "", cyt_combn),
+    cyt_combn = gsub("^pos", "", cyt_combn)
+  ) |>
+  dplyr::mutate(
+    cyt_combn = .cyt_combn_reorder(
+      cyt_combn, c("g", "2", "t", "17"),
+      pos_ind = "pos", neg_ind = "neg"
+    )
+  ) |>
+  dplyr::select(
+    vaccine, prid, ptid, sex, infxn, timepoint, subset, cyt_combn, response
+  ) |>
+  dplyr::mutate(
+    infxn = ifelse(infxn == "positive", "infected", "uninfected")
+  ) |>
+  UtilsCytoRSV::sum_over_markers(
+    grp = c(
+      "vaccine", "prid", "ptid", "sex", "infxn",
+      "timepoint", "subset", "cyt_combn", "sex"
+    ),
+    cmbn = "cyt_combn",
+    markers_to_sum = c("17"),
+    resp = "response"
+  )
+set.seed(3)
+data_tidy_m72_tb010 <- data_tidy_m72_tb010_pre_anon |>
+  dplyr::mutate(
+    ptid = .anonymise(ptid, vaccine, prid)
+  ) |>
+  dplyr::filter(!is.na(sex)) |>
+  dplyr::filter(
+    cyt_combn != "g-2-t-"
+  )
+```
+
+
 
 ### GSK.012
 
@@ -2094,7 +2237,8 @@ data_tidy_vacc_freq <- dplyr::bind_rows(
   data_tidy_mva85a_tb011,
   data_tidy_h56,
   data_tidy_h1,
-  data_tidy_bcg_040
+  data_tidy_bcg_040,
+  data_tidy_m72_tb010
 )
 ```
 

@@ -51,7 +51,8 @@ vacc_extract_peak <- function(.data,
     "c-035-456" = 70,
     "tb008" = 7, # check
     "tb011" = 7, # check
-    "thyb04" = 70
+    "thyb04" = 70,
+    "tb010" = 37
   )
 }
 
