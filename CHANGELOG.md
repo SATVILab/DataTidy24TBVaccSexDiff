@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- *Minor* (v1.14.0): Miguel Julio Rodo (14:04:10)
+  - Add M72 TB010 sex and immune response data
+
 - Patch (v1.13.2): Miguel Julio Rodo (08:30:07)
   - Group by sex by default when calculating response transformations
 - *Minor* (v1.13.0): Miguel Julio Rodo (14:11:55)

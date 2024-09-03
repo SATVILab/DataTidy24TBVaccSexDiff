@@ -32,7 +32,7 @@ To load the data, run:
     library(DataTidy24TBVaccSexDiff)
     data("data_tidy_vacc_freq")
     data_tidy_vacc_freq
-    #> # A tibble: 7,763 × 9
+    #> # A tibble: 11,361 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd4    g+2+t+      0.0988
@@ -45,7 +45,7 @@ To load the data, run:
     #>  8 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2-t+      0.013 
-    #> # ℹ 7,753 more rows
+    #> # ℹ 11,351 more rows
 
 ### Calculating summed and profile responses
 
@@ -54,7 +54,19 @@ To calculate the summed response, run:
     vacc_calc_response_summed(
       data_tidy_vacc_freq, "response"
     )
-    #> # A tibble: 1,109 × 8
+    #> Warning: There was 1 warning in `dplyr::group_by()`.
+    #> ℹ In argument: `dplyr::across(grp_vec)`.
+    #> Caused by warning:
+    #> ! Using an external vector in selections was deprecated in tidyselect 1.1.0.
+    #> ℹ Please use `all_of()` or `any_of()` instead.
+    #>   # Was:
+    #>   data %>% select(grp_vec)
+    #> 
+    #>   # Now:
+    #>   data %>% select(all_of(grp_vec))
+    #> 
+    #> See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+    #> # A tibble: 1,623 × 8
     #>    vaccine prid  timepoint infxn      sex    ptid       subset response
     #>    <chr>   <chr>     <dbl> <chr>      <chr>  <chr>      <chr>     <dbl>
     #>  1 bcg     040           0 uninfected female bcg-040-11 cd4     0.0443 
@@ -67,14 +79,14 @@ To calculate the summed response, run:
     #>  8 bcg     040           0 uninfected female bcg-040-2  cd8     0.0254 
     #>  9 bcg     040           0 uninfected female bcg-040-21 cd4     0.103  
     #> 10 bcg     040           0 uninfected female bcg-040-21 cd8     0.0294 
-    #> # ℹ 1,099 more rows
+    #> # ℹ 1,613 more rows
 
 To calculate the summed profile, run:
 
     vacc_calc_response_profile(
       data_tidy_vacc_freq, "response"
     )
-    #> # A tibble: 7,763 × 9
+    #> # A tibble: 11,361 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd4    g+2+t+      0.0988
@@ -87,14 +99,14 @@ To calculate the summed profile, run:
     #>  8 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2-t+      0.013 
-    #> # ℹ 7,753 more rows
+    #> # ℹ 11,351 more rows
 
 ### Extracting timepoints
 
 To extract the baseline response, run:
 
     vacc_extract_baseline(data_tidy_vacc_freq)
-    #> # A tibble: 1,806 × 9
+    #> # A tibble: 2,394 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd4    g+2+t+      0     
@@ -107,12 +119,12 @@ To extract the baseline response, run:
     #>  8 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2-t+      0     
-    #> # ℹ 1,796 more rows
+    #> # ℹ 2,384 more rows
 
 To extract the peak response, run:
 
     vacc_extract_peak(data_tidy_vacc_freq)
-    #> # A tibble: 1,785 × 9
+    #> # A tibble: 2,387 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-8 male  uninfected         7 cd4    g+2+t+      0.0289
@@ -125,7 +137,7 @@ To extract the peak response, run:
     #>  8 mva85a  tb008 mva85a-tb008-8 male  uninfected         7 cd8    g+2+t+      0.0011
     #>  9 mva85a  tb008 mva85a-tb008-8 male  uninfected         7 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-8 male  uninfected         7 cd8    g+2-t+      0     
-    #> # ℹ 1,775 more rows
+    #> # ℹ 2,377 more rows
 
 To extract the memory response, run:
 
@@ -151,7 +163,7 @@ profile responses (and the order is irrelevant), for example:
     data_tidy_vacc_freq |>
       vacc_calc_response_summed("response") |>
       vacc_extract_peak()
-    #> # A tibble: 255 × 8
+    #> # A tibble: 341 × 8
     #>    vaccine prid  timepoint infxn      sex    ptid       subset response
     #>    <chr>   <chr>     <dbl> <chr>      <chr>  <chr>      <chr>     <dbl>
     #>  1 bcg     040          70 uninfected female bcg-040-11 cd4     0.0566 
@@ -164,11 +176,11 @@ profile responses (and the order is irrelevant), for example:
     #>  8 bcg     040          70 uninfected female bcg-040-2  cd8     0.00312
     #>  9 bcg     040          70 uninfected female bcg-040-21 cd4     0.280  
     #> 10 bcg     040          70 uninfected female bcg-040-21 cd8     0.0176 
-    #> # ℹ 245 more rows
+    #> # ℹ 331 more rows
     data_tidy_vacc_freq |>
       vacc_extract_baseline() |>
       vacc_calc_response_profile("response")
-    #> # A tibble: 1,806 × 9
+    #> # A tibble: 2,394 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd4    g+2+t+      0     
@@ -181,13 +193,13 @@ profile responses (and the order is irrelevant), for example:
     #>  8 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-8 male  uninfected         0 cd8    g+2-t+      0     
-    #> # ℹ 1,796 more rows
+    #> # ℹ 2,384 more rows
 
 In addition, a convenience function for setting negative responses to
 zero is provided:
 
     vacc_set_neg_to_zero(data_tidy_vacc_freq, "response")
-    #> # A tibble: 7,763 × 9
+    #> # A tibble: 11,361 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd4    g+2+t+      0.0988
@@ -200,7 +212,7 @@ zero is provided:
     #>  8 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-5 male  uninfected        28 cd8    g+2-t+      0.013 
-    #> # ℹ 7,753 more rows
+    #> # ℹ 11,351 more rows
 
 ## Reproduction
 
