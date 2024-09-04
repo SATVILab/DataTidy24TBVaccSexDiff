@@ -54,18 +54,6 @@ To calculate the summed response, run:
     vacc_calc_response_summed(
       data_tidy_vacc_freq, "response"
     )
-    #> Warning: There was 1 warning in `dplyr::group_by()`.
-    #> ℹ In argument: `dplyr::across(grp_vec)`.
-    #> Caused by warning:
-    #> ! Using an external vector in selections was deprecated in tidyselect 1.1.0.
-    #> ℹ Please use `all_of()` or `any_of()` instead.
-    #>   # Was:
-    #>   data %>% select(grp_vec)
-    #> 
-    #>   # Now:
-    #>   data %>% select(all_of(grp_vec))
-    #> 
-    #> See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
     #> # A tibble: 1,623 × 8
     #>    vaccine prid  timepoint infxn      sex    ptid       subset response
     #>    <chr>   <chr>     <dbl> <chr>      <chr>  <chr>      <chr>     <dbl>
@@ -142,7 +130,7 @@ To extract the peak response, run:
 To extract the memory response, run:
 
     vacc_extract_memory(data_tidy_vacc_freq)
-    #> # A tibble: 1,456 × 9
+    #> # A tibble: 2,058 × 9
     #>    vaccine prid  ptid           sex   infxn      timepoint subset cyt_combn response
     #>    <chr>   <chr> <chr>          <chr> <chr>          <dbl> <chr>  <chr>        <dbl>
     #>  1 mva85a  tb008 mva85a-tb008-5 male  uninfected       168 cd4    g+2+t+      0.0393
@@ -155,7 +143,7 @@ To extract the memory response, run:
     #>  8 mva85a  tb008 mva85a-tb008-5 male  uninfected       168 cd8    g+2+t+      0     
     #>  9 mva85a  tb008 mva85a-tb008-5 male  uninfected       168 cd8    g+2+t-      0     
     #> 10 mva85a  tb008 mva85a-tb008-5 male  uninfected       168 cd8    g+2-t+      0.014 
-    #> # ℹ 1,446 more rows
+    #> # ℹ 2,048 more rows
 
 Note that these work automatically after the calculation of summed or
 profile responses (and the order is irrelevant), for example:

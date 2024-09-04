@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- Patch (v1.14.1): Miguel Julio Rodo (13:33:14)
+  - Add memory timepoint for M72
 - *Minor* (v1.14.0): Miguel Julio Rodo (14:04:10)
   - Add M72 TB010 sex and immune response data
 
