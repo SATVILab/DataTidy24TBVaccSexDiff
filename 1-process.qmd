@@ -1229,7 +1229,7 @@ data_tidy_bcg_040 <- data_tidy_bcg_040 |>
   )
 ```
 
-Now we sum over IL17:
+Now we sum over IL17 and IL22:
 
 ```{r}
 data_tidy_bcg_040 <- data_tidy_bcg_040 |>
