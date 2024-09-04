@@ -78,6 +78,7 @@ vacc_extract_memory <- function(.data,
     "c-035-456" = 292,
     "tb008" = 168,
     "tb011" = 364,
-    "thyb04" = 224
+    "thyb04" = 224,
+    "tb010" = 210
   )
 }
